@@ -1,4 +1,5 @@
 using System;
+using Biofall.Data;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -29,7 +30,6 @@ namespace Biofall.Core
         private void Start()
         {
             Time.timeScale = 1f;
-            EventBus.Clear();
 
             if (bannerGroup == null) bannerGroup = GetComponentInChildren<CanvasGroup>(true);
             if (bannerRect == null && bannerGroup != null) bannerRect = bannerGroup.GetComponent<RectTransform>();

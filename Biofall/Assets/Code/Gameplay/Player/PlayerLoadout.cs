@@ -7,6 +7,10 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(Health))]
     public sealed class PlayerLoadout : MonoBehaviour
     {
+
+        private IProgressionService _progression;
+        private IProgressionService Progression =>
+            _progression ??= ServiceLocator.Get<IProgressionService>();
         [Tooltip("Seconds after taking damage before health regen resumes.")]
         [SerializeField] private float regenCombatDelay = 4f;
 
@@ -39,11 +43,11 @@ namespace Biofall.Gameplay
 
             if (_health != null)
             {
-                _health.SetMax(_baseMax + PlayerProgression.MaxHealthBonus, true);
+                _health.SetMax(_baseMax + Progression.MaxHealthBonus, true);
                 _health.Damaged += OnDamaged;
             }
-            if (_motor != null) _motor.SetSpeedMultiplier(PlayerProgression.MoveSpeedMultiplier);
-            if (_grenades != null) _grenades.ApplyCapacityBonus(PlayerProgression.GrenadeCapacityBonus);
+            if (_motor != null) _motor.SetSpeedMultiplier(Progression.MoveSpeedMultiplier);
+            if (_grenades != null) _grenades.ApplyCapacityBonus(Progression.GrenadeCapacityBonus);
         }
 
         private void OnDestroy()
@@ -56,7 +60,7 @@ namespace Biofall.Gameplay
         private void Update()
         {
             if (!_applied) return;
-            float regen = PlayerProgression.HealthRegenPerSecond;
+            float regen = Progression.HealthRegenPerSecond;
             if (regen <= 0f || _health == null || !_health.IsAlive) return;
             if (Time.time < _regenBlockedUntil || _health.Current >= _health.Max) return;
 

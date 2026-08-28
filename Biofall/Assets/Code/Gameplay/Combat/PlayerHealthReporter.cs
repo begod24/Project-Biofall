@@ -7,6 +7,9 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(Health))]
     public sealed class PlayerHealthReporter : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         private Health _health;
 
         private void Awake()
@@ -28,21 +31,24 @@ namespace Biofall.Gameplay
             _health.Died -= OnDied;
         }
 
-        private void Start()
+        private void Start() => RefreshHud();
+
+        public void RefreshHud()
         {
-            EventBus.Publish(new PlayerDamaged(_health.Current, _health.Max, 0f));
+            if (_health == null) return;
+            Bus.Publish(new PlayerDamaged(_health.Current, _health.Max, 0f));
         }
 
         private void OnDamaged(DamageInfo info, float current)
-            => EventBus.Publish(new PlayerDamaged(current, _health.Max, info.Amount));
+            => Bus.Publish(new PlayerDamaged(current, _health.Max, info.Amount));
 
         private void OnHealed(float current, float max)
-            => EventBus.Publish(new PlayerDamaged(current, max, 0f));
+            => Bus.Publish(new PlayerDamaged(current, max, 0f));
 
         private void OnDied()
         {
             if (NetSession.InCoop) return;
-            EventBus.Publish(new PlayerDied());
+            Bus.Publish(new PlayerDied());
         }
     }
 }

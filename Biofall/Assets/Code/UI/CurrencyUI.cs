@@ -6,21 +6,26 @@ namespace Biofall.UI
 {
     public sealed class CurrencyUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
+        private RunState _run;
+        private RunState Run => _run ??= ServiceLocator.Get<RunState>();
         [SerializeField] private TMP_Text text;
 
         private void Awake()
         {
             if (text == null) text = GetComponent<TMP_Text>();
-            Refresh(CurrencyWallet.Total);
+            Refresh(Run.BioSamples);
         }
 
         private void OnEnable()
         {
-            EventBus.Subscribe<BioSamplesChanged>(OnChanged);
-            Refresh(CurrencyWallet.Total);
+            Bus.Subscribe<BioSamplesChanged>(OnChanged);
+            Refresh(Run.BioSamples);
         }
 
-        private void OnDisable() => EventBus.Unsubscribe<BioSamplesChanged>(OnChanged);
+        private void OnDisable() => Bus.Unsubscribe<BioSamplesChanged>(OnChanged);
 
         private void OnChanged(BioSamplesChanged e) => Refresh(e.Total);
 

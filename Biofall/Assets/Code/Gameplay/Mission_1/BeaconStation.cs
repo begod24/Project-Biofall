@@ -6,6 +6,9 @@ namespace Biofall.Gameplay.Mission1
 {
     public sealed class BeaconStation : MonoBehaviour, IInteractable
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Defense")]
         [Tooltip("Seconds of in-zone time needed to fully charge the beacon.")]
         [SerializeField] private float defenseTime = 45f;
@@ -46,8 +49,8 @@ namespace Biofall.Gameplay.Mission1
         public void ServerInteract()
         {
             if (!CanInteract) return;
-            EventBus.Publish(new BeaconActivated());
-            EventBus.Publish(new MissionProgress(barLabel, 0f, true));
+            Bus.Publish(new BeaconActivated());
+            Bus.Publish(new MissionProgress(barLabel, 0f, true));
         }
 
         private void Awake()
@@ -58,17 +61,17 @@ namespace Biofall.Gameplay.Mission1
         private void OnEnable()
         {
             PlayerInteractor.Register(this);
-            EventBus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Subscribe<BeaconActivated>(OnBeaconActivatedFact);
-            EventBus.Subscribe<BeaconCharged>(OnBeaconChargedFact);
+            Bus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Subscribe<BeaconActivated>(OnBeaconActivatedFact);
+            Bus.Subscribe<BeaconCharged>(OnBeaconChargedFact);
         }
 
         private void OnDisable()
         {
             PlayerInteractor.Unregister(this);
-            EventBus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Unsubscribe<BeaconActivated>(OnBeaconActivatedFact);
-            EventBus.Unsubscribe<BeaconCharged>(OnBeaconChargedFact);
+            Bus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Unsubscribe<BeaconActivated>(OnBeaconActivatedFact);
+            Bus.Unsubscribe<BeaconCharged>(OnBeaconChargedFact);
         }
 
         private void OnGeneratorActivated(GeneratorActivated _) => _unlocked = true;
@@ -92,14 +95,14 @@ namespace Biofall.Gameplay.Mission1
             if (AllAlivePlayersInZone(defenseRadius))
             {
                 _progress = Mathf.Min(1f, _progress + Time.deltaTime / defenseTime);
-                EventBus.Publish(new MissionProgress(barLabel, _progress, true));
+                Bus.Publish(new MissionProgress(barLabel, _progress, true));
 
                 if (_progress >= 1f)
                     Charged();
             }
             else
             {
-                EventBus.Publish(new MissionProgress("REGROUP AT THE BEACON", _progress, true));
+                Bus.Publish(new MissionProgress("REGROUP AT THE BEACON", _progress, true));
             }
         }
 
@@ -120,8 +123,8 @@ namespace Biofall.Gameplay.Mission1
         private void Charged()
         {
             if (_charged) return;
-            EventBus.Publish(new MissionProgress(barLabel, 1f, false));
-            EventBus.Publish(new BeaconCharged());
+            Bus.Publish(new MissionProgress(barLabel, 1f, false));
+            Bus.Publish(new BeaconCharged());
         }
 
         private void OnDrawGizmosSelected()

@@ -1,4 +1,5 @@
 using System.Collections;
+using Biofall.Data;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,9 @@ namespace Biofall.UI
 {
     public sealed class MissionCompleteUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject panel;
         [SerializeField] private Button replayButton;
         [SerializeField] private Button mainMenuButton;
@@ -30,8 +34,8 @@ namespace Biofall.UI
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ToMainMenu);
         }
 
-        private void OnEnable() => EventBus.Subscribe<MissionCompleted>(OnCompleted);
-        private void OnDisable() => EventBus.Unsubscribe<MissionCompleted>(OnCompleted);
+        private void OnEnable() => Bus.Subscribe<MissionCompleted>(OnCompleted);
+        private void OnDisable() => Bus.Unsubscribe<MissionCompleted>(OnCompleted);
 
         private void OnCompleted(MissionCompleted _)
         {
@@ -69,18 +73,8 @@ namespace Biofall.UI
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private void ToMainMenu()
-        {
-            Time.timeScale = 1f;
-            UiOverlay.Active = false;
-
-            if (NetSession.InCoop && NetworkBootstrap.Instance != null)
-            {
-                NetworkBootstrap.Instance.LeaveToMainMenu();
-                return;
-            }
-
-            SceneManager.LoadScene(GameScenes.MainMenu);
-        }
+        // Leaving the session, shutting NGO down and loading the menu all belong together, so
+        // all three screens hand off to the one place that does them in order.
+        private void ToMainMenu() => RunExit.ToMainMenu();
     }
 }

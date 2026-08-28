@@ -5,6 +5,9 @@ namespace Biofall.Gameplay
 {
     public sealed class AmmoSystem : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private int magazineSize = 12;
         [SerializeField] private int rounds = 12;
         [SerializeField] private int reserve = 48;
@@ -51,6 +54,10 @@ namespace Biofall.Gameplay
             Broadcast();
         }
 
+        // Re-publishes the current counts. Used to reclaim the shared HUD after a remote
+        // player's body broadcast its own ammo on spawn.
+        public void RefreshHud() => Broadcast();
+
         public void AddRounds(int amount)
         {
             if (amount <= 0) return;
@@ -61,7 +68,7 @@ namespace Biofall.Gameplay
 
         private void Broadcast()
         {
-            EventBus.Publish(new AmmoChanged(rounds, reserve, _infinite));
+            Bus.Publish(new AmmoChanged(rounds, reserve, _infinite));
         }
     }
 }

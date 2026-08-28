@@ -1,4 +1,5 @@
 using UnityEngine;
+using Biofall.Data;
 using Biofall.Core;
 using Biofall.Net;
 
@@ -6,6 +7,9 @@ namespace Biofall.Gameplay
 {
     public sealed class ScreamWaveAttack : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private ScreamerData data;
         [SerializeField] private Animator animator;
         [SerializeField] private AudioSource audioSource;
@@ -65,10 +69,26 @@ namespace Biofall.Gameplay
                 audioSource.PlayOneShot(data.screamSfx, data.screamVolume);
         }
 
+        // Client-side render of a pulse the server already emitted.
+        public void RenderWave(Vector3 origin) => PlayWaveFx(origin);
+
         private void EmitWave()
         {
+            // Only the server decides when a pulse goes out; clients draw what it broadcasts.
+            if (NetSession.InCoop && !NetSession.IsServer) return;
+
             Vector3 origin = waveOrigin.position;
 
+            PlayWaveFx(origin);
+
+            if (NetSession.InCoop)
+                GetComponent<CoopEnemy>()?.ServerBroadcastScream(origin);
+
+            ApplyWaveDamage(origin);
+        }
+
+        private void PlayWaveFx(Vector3 origin)
+        {
             if (data.waveVfxPrefab != null && PoolService.Instance != null)
             {
                 Vector3 vfxPos = origin + Vector3.up * 0.08f;
@@ -77,15 +97,22 @@ namespace Biofall.Gameplay
                     vfx.Play(data.waveRadius, data.waveExpandDuration);
             }
 
-            if (data.cameraShakeAmplitude > 0f)
-                EventBus.Publish(new CameraShake(data.cameraShakeAmplitude));
+            // Only shake the screen of someone close enough to feel it.
+            Transform local = PlayerRegistry.LocalPlayer;
+            if (data.cameraShakeAmplitude > 0f && local != null)
+            {
+                Vector3 toLocal = local.position - origin; toLocal.y = 0f;
+                if (toLocal.sqrMagnitude <= data.waveRadius * data.waveRadius)
+                    Bus.Publish(new CameraShake(data.cameraShakeAmplitude));
+            }
+        }
 
+        private void ApplyWaveDamage(Vector3 origin)
+        {
             float r2 = data.waveRadius * data.waveRadius;
 
             if (NetSession.InCoop)
             {
-                if (!NetSession.IsServer) return;
-
                 var all = PlayerRegistry.All;
                 for (int i = 0; i < all.Count; i++)
                 {

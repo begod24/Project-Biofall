@@ -15942,6 +15942,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 6902232161521404087, guid: 4455a70952a574836ac98a77ac052d12, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -16278,8 +16282,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 878549cd955ff4c4a9c703fc9ad81ba7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Biofall.Core.Bootstrap
-  inputReader: {fileID: 0}
-  logInput: 1
+  installers: []
+  servicesPrefab: {fileID: 1915086185469131507, guid: fac9d6cc84d4b40e688e72b6c4b6b15e, type: 3}
+  upgradeCatalog: {fileID: 0}
+  operativeCatalog: {fileID: 0}
 --- !u!114 &1719597968
 MonoBehaviour:
   m_ObjectHideFlags: 0

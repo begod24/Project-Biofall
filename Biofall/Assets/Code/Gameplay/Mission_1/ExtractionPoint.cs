@@ -6,6 +6,9 @@ namespace Biofall.Gameplay.Mission1
 {
     public sealed class ExtractionPoint : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Extraction")]
         [Tooltip("Seconds the player must hold the point.")]
         [SerializeField] private float extractTime = 5f;
@@ -27,8 +30,8 @@ namespace Biofall.Gameplay.Mission1
             if (openVfx != null) openVfx.SetActive(false);
         }
 
-        private void OnEnable() => EventBus.Subscribe<BeaconCharged>(OnBeaconCharged);
-        private void OnDisable() => EventBus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
+        private void OnEnable() => Bus.Subscribe<BeaconCharged>(OnBeaconCharged);
+        private void OnDisable() => Bus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
 
         private void OnBeaconCharged(BeaconCharged _)
         {
@@ -55,7 +58,7 @@ namespace Biofall.Gameplay.Mission1
             {
                 _elapsed = 0f;
                 _lastShownSecond = -1;
-                EventBus.Publish(new MissionProgress("REACH THE EXTRACTION", 0f, true));
+                Bus.Publish(new MissionProgress("REACH THE EXTRACTION", 0f, true));
             }
         }
 
@@ -67,7 +70,7 @@ namespace Biofall.Gameplay.Mission1
                 _lastShownSecond = remaining;
                 _label = "EXTRACTING IN " + remaining;
             }
-            EventBus.Publish(new MissionProgress(_label, Mathf.Clamp01(_elapsed / extractTime), true));
+            Bus.Publish(new MissionProgress(_label, Mathf.Clamp01(_elapsed / extractTime), true));
         }
 
         private bool AllPlayersInZone(float radius)
@@ -87,8 +90,8 @@ namespace Biofall.Gameplay.Mission1
         private void Complete()
         {
             _done = true;
-            EventBus.Publish(new MissionProgress(null, 1f, false));
-            EventBus.Publish(new MissionCompleted());
+            Bus.Publish(new MissionProgress(null, 1f, false));
+            Bus.Publish(new MissionCompleted());
         }
 
         private void OnDrawGizmosSelected()

@@ -7,6 +7,9 @@ namespace Biofall.UI
 {
     public sealed class CoopDownedUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Downed banner (this player)")]
         [SerializeField] private GameObject downedPanel;
         [SerializeField] private Transform bleedFill;
@@ -31,20 +34,20 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDowned>(OnDowned);
-            EventBus.Subscribe<PlayerRevived>(OnRevived);
-            EventBus.Subscribe<PlayerEliminated>(OnEliminated);
-            EventBus.Subscribe<ReviveProgress>(OnReviveProgress);
-            EventBus.Subscribe<TeamWiped>(OnTeamWiped);
+            Bus.Subscribe<PlayerDowned>(OnDowned);
+            Bus.Subscribe<PlayerRevived>(OnRevived);
+            Bus.Subscribe<PlayerEliminated>(OnEliminated);
+            Bus.Subscribe<ReviveProgress>(OnReviveProgress);
+            Bus.Subscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDowned>(OnDowned);
-            EventBus.Unsubscribe<PlayerRevived>(OnRevived);
-            EventBus.Unsubscribe<PlayerEliminated>(OnEliminated);
-            EventBus.Unsubscribe<ReviveProgress>(OnReviveProgress);
-            EventBus.Unsubscribe<TeamWiped>(OnTeamWiped);
+            Bus.Unsubscribe<PlayerDowned>(OnDowned);
+            Bus.Unsubscribe<PlayerRevived>(OnRevived);
+            Bus.Unsubscribe<PlayerEliminated>(OnEliminated);
+            Bus.Unsubscribe<ReviveProgress>(OnReviveProgress);
+            Bus.Unsubscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnDowned(PlayerDowned e)

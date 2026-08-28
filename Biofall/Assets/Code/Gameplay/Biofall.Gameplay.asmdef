@@ -1,0 +1,20 @@
+{
+    "name": "Biofall.Gameplay",
+    "rootNamespace": "Biofall.Gameplay",
+    "references": [
+        "Biofall.Data",
+        "Biofall.Core",
+        "Biofall.Net",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

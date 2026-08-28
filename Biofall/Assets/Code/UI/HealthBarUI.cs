@@ -6,6 +6,9 @@ namespace Biofall.UI
 {
     public sealed class HealthBarUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private RectTransform fill;
         [SerializeField] private TMP_Text label;
 
@@ -21,14 +24,14 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDamaged>(OnPlayerDamaged);
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<PlayerDamaged>(OnPlayerDamaged);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDamaged>(OnPlayerDamaged);
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<PlayerDamaged>(OnPlayerDamaged);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void OnPlayerDamaged(PlayerDamaged e)

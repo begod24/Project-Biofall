@@ -7,6 +7,9 @@ namespace Biofall.UI
 {
     public sealed class MissionObjectivesUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private TMP_Text mainText;
         [SerializeField] private TMP_Text subText;
 
@@ -24,8 +27,8 @@ namespace Biofall.UI
             }
         }
 
-        private void OnEnable() => EventBus.Subscribe<MissionPhaseChanged>(OnPhase);
-        private void OnDisable() => EventBus.Unsubscribe<MissionPhaseChanged>(OnPhase);
+        private void OnEnable() => Bus.Subscribe<MissionPhaseChanged>(OnPhase);
+        private void OnDisable() => Bus.Unsubscribe<MissionPhaseChanged>(OnPhase);
 
         private void OnPhase(MissionPhaseChanged e)
         {

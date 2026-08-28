@@ -7,6 +7,10 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(AudioSource))]
     public sealed class GameMusic : MonoBehaviour
     {
+
+        private ISettingsService _settingsService;
+        private ISettingsService SettingsService =>
+            _settingsService ??= ServiceLocator.Get<ISettingsService>();
         [SerializeField] private AudioSource source;
         [SerializeField] private AudioClip[] tracks;
         [Range(0f, 1f)] [SerializeField] private float targetVolume = 0.35f;
@@ -28,19 +32,19 @@ namespace Biofall.Gameplay
 
         private void OnEnable()
         {
-            GameSettings.MusicVolumeChanged += ApplyVolume;
+            SettingsService.MusicVolumeChanged += ApplyVolume;
             StartCoroutine(Loop());
         }
 
         private void OnDisable()
         {
-            GameSettings.MusicVolumeChanged -= ApplyVolume;
+            SettingsService.MusicVolumeChanged -= ApplyVolume;
             StopAllCoroutines();
         }
 
         private void ApplyVolume()
         {
-            if (source != null) source.volume = _fade01 * targetVolume * GameSettings.MusicVolume;
+            if (source != null) source.volume = _fade01 * targetVolume * SettingsService.MusicVolume;
         }
 
         private IEnumerator Loop()

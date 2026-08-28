@@ -1,4 +1,5 @@
 using System.Collections;
+using Biofall.Data;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,9 @@ namespace Biofall.UI
 {
     public sealed class GameOverUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject panel;
         [SerializeField] private Button restartButton;
         [SerializeField] private Button mainMenuButton;
@@ -34,14 +38,14 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
-            EventBus.Subscribe<TeamWiped>(OnTeamWiped);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
-            EventBus.Unsubscribe<TeamWiped>(OnTeamWiped);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnPlayerDied(PlayerDied _)
@@ -90,18 +94,8 @@ namespace Biofall.UI
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private void ToMainMenu()
-        {
-            Time.timeScale = 1f;
-            UiOverlay.Active = false;
-
-            if (NetSession.InCoop && NetworkBootstrap.Instance != null)
-            {
-                NetworkBootstrap.Instance.LeaveToMainMenu();
-                return;
-            }
-
-            SceneManager.LoadScene(GameScenes.MainMenu);
-        }
+        // Leaving the session, shutting NGO down and loading the menu all belong together, so
+        // all three screens hand off to the one place that does them in order.
+        private void ToMainMenu() => RunExit.ToMainMenu();
     }
 }

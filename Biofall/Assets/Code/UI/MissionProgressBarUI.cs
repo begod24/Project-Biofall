@@ -7,6 +7,9 @@ namespace Biofall.UI
 {
     public sealed class MissionProgressBarUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject root;
         [SerializeField] private RectTransform fill;
         [SerializeField] private TMP_Text label;
@@ -23,8 +26,8 @@ namespace Biofall.UI
             HideRootChildren();
         }
 
-        private void OnEnable() => EventBus.Subscribe<MissionProgress>(OnProgress);
-        private void OnDisable() => EventBus.Unsubscribe<MissionProgress>(OnProgress);
+        private void OnEnable() => Bus.Subscribe<MissionProgress>(OnProgress);
+        private void OnDisable() => Bus.Unsubscribe<MissionProgress>(OnProgress);
 
         private void OnProgress(MissionProgress e)
         {

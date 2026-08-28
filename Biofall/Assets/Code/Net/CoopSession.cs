@@ -1,4 +1,5 @@
 using System;
+using Biofall.Data;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -152,7 +153,7 @@ namespace Biofall.Net
                 return;
             }
 
-            Vector3 spawn = CoopPlayer.ResolveMissionSpawnPosition(clientId);
+            Vector3 spawn = PlayerSpawnPoints.ResolveMission(clientId);
             var go = Instantiate(prefab, spawn, Quaternion.identity);
             go.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
         }

@@ -7,6 +7,9 @@ namespace Biofall.Gameplay.Mission1
 {
     public sealed class MissionDirector : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Defense waves")]
         [Tooltip("SOLO spawner driven during the beacon defense (its SpawnNow batch = one wave).")]
         [SerializeField] private EnemySpawner defenseSpawner;
@@ -20,6 +23,7 @@ namespace Biofall.Gameplay.Mission1
         private MissionPhase _phase = MissionPhase.FindGenerator;
         private Coroutine _waveLoop;
         private bool _ended;
+        private bool _warnedNoSpawner;
 
         public MissionPhase Phase => _phase;
 
@@ -27,20 +31,20 @@ namespace Biofall.Gameplay.Mission1
         {
             if (NetSession.InCoop && !NetSession.IsServer) { enabled = false; return; }
 
-            EventBus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Subscribe<BeaconActivated>(OnBeaconActivated);
-            EventBus.Subscribe<BeaconCharged>(OnBeaconCharged);
-            EventBus.Subscribe<MissionCompleted>(OnMissionCompleted);
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Subscribe<BeaconActivated>(OnBeaconActivated);
+            Bus.Subscribe<BeaconCharged>(OnBeaconCharged);
+            Bus.Subscribe<MissionCompleted>(OnMissionCompleted);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Unsubscribe<BeaconActivated>(OnBeaconActivated);
-            EventBus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
-            EventBus.Unsubscribe<MissionCompleted>(OnMissionCompleted);
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Unsubscribe<BeaconActivated>(OnBeaconActivated);
+            Bus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
+            Bus.Unsubscribe<MissionCompleted>(OnMissionCompleted);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void Start()
@@ -80,7 +84,7 @@ namespace Biofall.Gameplay.Mission1
         private void SetPhase(MissionPhase phase)
         {
             _phase = phase;
-            EventBus.Publish(new MissionPhaseChanged(phase));
+            Bus.Publish(new MissionPhaseChanged(phase));
         }
 
         private IEnumerator WaveLoop()
@@ -88,16 +92,37 @@ namespace Biofall.Gameplay.Mission1
             yield return new WaitForSeconds(firstWaveDelay);
             while (!_ended)
             {
-                if (NetSession.InCoop)
-                {
-                    if (coopDefenseSpawner != null) coopDefenseSpawner.SpawnWaveNow();
-                }
-                else if (defenseSpawner != null)
-                {
-                    defenseSpawner.SpawnNow();
-                }
+                SpawnWave();
                 yield return new WaitForSeconds(waveInterval);
             }
+        }
+
+        // Which spawner runs is decided by which one can actually run, not by NetSession.InCoop.
+        // Solo is a session of one, so the server-driven spawner is the right one in every mode;
+        // Mission_1_Coop accordingly keeps the older solo spawner on a deactivated GameObject.
+        // Asking that deactivated object to start a coroutine is what used to throw here, once
+        // per wave, with no enemies arriving either way.
+        private void SpawnWave()
+        {
+            if (coopDefenseSpawner != null && coopDefenseSpawner.isActiveAndEnabled)
+            {
+                coopDefenseSpawner.SpawnWaveNow();
+                return;
+            }
+
+            if (defenseSpawner != null && defenseSpawner.isActiveAndEnabled)
+            {
+                defenseSpawner.SpawnNow();
+                return;
+            }
+
+            // Silence would read as "the defense is just easy". Say it once and keep the loop
+            // running, so turning a spawner back on mid-run still works.
+            if (_warnedNoSpawner) return;
+            _warnedNoSpawner = true;
+            Debug.LogError("[Mission] Beacon defense has no usable spawner. Assign a " +
+                           "CoopEnemySpawner on the MissionDirector, or activate the solo " +
+                           "EnemySpawner's GameObject -- no waves will arrive.");
         }
 
         private void StopWaves()

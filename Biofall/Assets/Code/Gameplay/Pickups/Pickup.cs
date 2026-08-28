@@ -6,6 +6,10 @@ namespace Biofall.Gameplay
 {
     public abstract class Pickup : MonoBehaviour, IPoolable
     {
+
+        private IProgressionService _progression;
+        private IProgressionService Progression =>
+            _progression ??= ServiceLocator.Get<IProgressionService>();
         [SerializeField] protected float collectRadius = 1.2f;
         [Tooltip("Seconds before the pickup auto-despawns. Set to 0 (or less) to never disappear.")]
         [SerializeField] private float lifetime = 12f;
@@ -29,7 +33,7 @@ namespace Biofall.Gameplay
         public void OnSpawned() => _timer = lifetime;
         public void OnDespawned() { }
 
-        public float CollectRadius => collectRadius + PlayerProgression.PickupRadiusBonus;
+        public float CollectRadius => collectRadius + Progression.PickupRadiusBonus;
 
         public void ApplyReward() => OnCollected();
 

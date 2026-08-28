@@ -5,6 +5,9 @@ namespace Biofall.Gameplay
 {
     public sealed class GrenadeInventory : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private int startCount = 3;
         [SerializeField] private int maxCount = 5;
 
@@ -40,6 +43,12 @@ namespace Biofall.Gameplay
             Broadcast();
         }
 
+        public void RefreshHud()
+        {
+            EnsureInit();
+            Broadcast();
+        }
+
         public bool Add(int amount = 1)
         {
             if (amount <= 0 || Count >= maxCount) return false;
@@ -48,6 +57,6 @@ namespace Biofall.Gameplay
             return true;
         }
 
-        private void Broadcast() => EventBus.Publish(new GrenadeCountChanged(Count, maxCount));
+        private void Broadcast() => Bus.Publish(new GrenadeCountChanged(Count, maxCount));
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Biofall.Data;
 using System.Text;
 using UnityEngine;
 using TMPro;
@@ -21,6 +22,9 @@ namespace Biofall.UI
     /// </summary>
     public sealed class WaveModeSummary : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Serializable]
         public sealed class KillCategory
         {
@@ -57,15 +61,15 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<TargetDied>(OnEnemyKilled);
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<TargetDied>(OnEnemyKilled);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
             WaveSpawner.WaveStarted += OnWaveStarted;
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<TargetDied>(OnEnemyKilled);
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<TargetDied>(OnEnemyKilled);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
             WaveSpawner.WaveStarted -= OnWaveStarted;
         }
 

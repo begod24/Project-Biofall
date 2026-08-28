@@ -1,4 +1,5 @@
 using UnityEngine;
+using Biofall.Data;
 using UnityEngine.AI;
 
 namespace Biofall.Gameplay
