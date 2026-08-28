@@ -51,6 +51,10 @@ namespace Biofall.Gameplay
             Broadcast();
         }
 
+        // Re-publishes the current counts. Used to reclaim the shared HUD after a remote
+        // player's body broadcast its own ammo on spawn.
+        public void RefreshHud() => Broadcast();
+
         public void AddRounds(int amount)
         {
             if (amount <= 0) return;

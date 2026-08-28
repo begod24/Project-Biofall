@@ -46,7 +46,21 @@ namespace Biofall.Net
             {
                 SetLocalSimulation(false);
                 PlayerRegistry.Register(transform);
+                RefreshLocalHud();
             }
+        }
+
+        // A body broadcasts its ammo/grenades/health from Awake, which lands before
+        // OnNetworkSpawn can silence a remote one. Re-assert the local player's values so the
+        // HUD does not keep a teammate's numbers.
+        private static void RefreshLocalHud()
+        {
+            Transform local = PlayerRegistry.LocalPlayer;
+            if (local == null) return;
+
+            local.GetComponent<PlayerHealthReporter>()?.RefreshHud();
+            local.GetComponent<GrenadeInventory>()?.RefreshHud();
+            local.GetComponent<WeaponController>()?.ActiveAmmo?.RefreshHud();
         }
 
         public override void OnNetworkDespawn()
@@ -101,6 +115,13 @@ namespace Biofall.Net
 
             SetEnabled<PlayerAnimator>(enabled);
             SetEnabled<PlayerDeath>(enabled);
+
+            // These three publish player-scoped state onto the shared EventBus, which the HUD
+            // reads. A remote body must stay quiet or it overwrites the local readouts.
+            SetEnabled<PlayerHealthReporter>(enabled);
+            SetEnabled<GrenadeInventory>(enabled);
+            foreach (var ammo in GetComponentsInChildren<AmmoSystem>(true))
+                ammo.enabled = enabled;
 
             foreach (var weapon in GetComponentsInChildren<Weapon>(true))
                 weapon.enabled = enabled;

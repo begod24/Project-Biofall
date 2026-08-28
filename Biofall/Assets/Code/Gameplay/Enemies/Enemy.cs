@@ -394,7 +394,7 @@ namespace Biofall.Gameplay
 
         private void CacheTarget()
         {
-            _playerTf = PlayerRegistry.Nearest(_tf.position);
+            _playerTf = PlayerRegistry.NearestAlive(_tf.position);
             if (_playerTf == null) _playerTf = PlayerRegistry.Player;
             _playerDamageable = _playerTf != null ? _playerTf.GetComponentInParent<IDamageable>() : null;
         }

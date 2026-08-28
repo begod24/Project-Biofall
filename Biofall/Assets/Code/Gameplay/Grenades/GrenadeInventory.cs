@@ -40,6 +40,12 @@ namespace Biofall.Gameplay
             Broadcast();
         }
 
+        public void RefreshHud()
+        {
+            EnsureInit();
+            Broadcast();
+        }
+
         public bool Add(int amount = 1)
         {
             if (amount <= 0 || Count >= maxCount) return false;

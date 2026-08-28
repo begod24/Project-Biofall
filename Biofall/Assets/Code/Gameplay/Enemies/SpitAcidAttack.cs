@@ -74,7 +74,7 @@ namespace Biofall.Gameplay
 
         private void SpawnAcid()
         {
-            Transform target = PlayerRegistry.Nearest(_tf.position);
+            Transform target = PlayerRegistry.NearestAlive(_tf.position);
             if (target == null) target = PlayerRegistry.Player;
             if (target == null) return;
 

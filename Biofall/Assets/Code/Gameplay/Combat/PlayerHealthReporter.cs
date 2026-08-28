@@ -28,8 +28,11 @@ namespace Biofall.Gameplay
             _health.Died -= OnDied;
         }
 
-        private void Start()
+        private void Start() => RefreshHud();
+
+        public void RefreshHud()
         {
+            if (_health == null) return;
             EventBus.Publish(new PlayerDamaged(_health.Current, _health.Max, 0f));
         }
 
