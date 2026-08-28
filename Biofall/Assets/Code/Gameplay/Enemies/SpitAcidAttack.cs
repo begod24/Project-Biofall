@@ -73,8 +73,19 @@ namespace Biofall.Gameplay
                 audioSource.PlayOneShot(data.spitSfx, data.spitVolume);
         }
 
+        // Client-side render of a landing point the server already chose.
+        public void RenderSpit(Vector3 landing)
+        {
+            if (PoolService.Instance == null || data == null) return;
+            Launch(landing);
+        }
+
         private void SpawnAcid()
         {
+            // In a session only the server decides where this lands; everyone else waits for
+            // ServerBroadcastSpit. Solo falls through and runs the same code.
+            if (NetSession.InCoop && !NetSession.IsServer) return;
+
             Transform target = PlayerRegistry.NearestAlive(_tf.position);
             if (target == null) target = PlayerRegistry.Player;
             if (target == null) return;
@@ -91,6 +102,14 @@ namespace Biofall.Gameplay
 
             if (PoolService.Instance == null) return;
 
+            Launch(landing);
+
+            if (NetSession.InCoop)
+                GetComponent<Biofall.Gameplay.CoopEnemy>()?.ServerBroadcastSpit(landing);
+        }
+
+        private void Launch(Vector3 landing)
+        {
             // Lob a visible glob if we have one — it flies in an arc and bursts into the acid pool on
             // impact (so you can see the spit coming). Falls back to dropping the pool directly.
             if (data.spitProjectilePrefab != null)

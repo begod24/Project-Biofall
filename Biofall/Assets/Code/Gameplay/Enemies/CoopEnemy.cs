@@ -120,6 +120,28 @@ namespace Biofall.Gameplay
         [Rpc(SendTo.NotServer)]
         private void AttackClientRpc() => _enemy.PlayAttackFx();
 
+        // The server picks where the acid lands and tells everyone. Clients used to compute it
+        // themselves from interpolated player positions, so the pool drew in a different spot on
+        // every screen while only the server's copy dealt damage.
+        public void ServerBroadcastSpit(Vector3 landing)
+        {
+            if (IsServer) SpitClientRpc(landing);
+        }
+
+        [Rpc(SendTo.NotServer)]
+        private void SpitClientRpc(Vector3 landing) =>
+            GetComponent<SpitAcidAttack>()?.RenderSpit(landing);
+
+        // Same for the scream: the server decides when a pulse goes out, clients only draw it.
+        public void ServerBroadcastScream(Vector3 origin)
+        {
+            if (IsServer) ScreamClientRpc(origin);
+        }
+
+        [Rpc(SendTo.NotServer)]
+        private void ScreamClientRpc(Vector3 origin) =>
+            GetComponent<ScreamWaveAttack>()?.RenderWave(origin);
+
         private void Update()
         {
             if (IsServer) return;

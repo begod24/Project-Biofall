@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &720470978065024992
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4722363812646974402}
+  - component: {fileID: 7238519063638744469}
+  - component: {fileID: 4049686650582561066}
+  - component: {fileID: 3763773882492208960}
+  - component: {fileID: 271180108064049580}
+  - component: {fileID: 8358458834582803070}
+  - component: {fileID: 8157617703395695543}
+  m_Layer: 0
+  m_Name: PF_Session
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4722363812646974402
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7238519063638744469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 3915676813
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  <InScenePlaced>k__BackingField: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
+--- !u!114 &4049686650582561066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a6d3ce93e80942f0b3df9d96ad46336, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Biofall.Net::Biofall.Net.SessionRoot
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &3763773882492208960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 962ad252bd1b4471bbe8d197b6f0f848, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Biofall.Net::Biofall.Net.LobbyRoster
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &271180108064049580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cbcfe1d8e5d04b62a593774557d8ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Biofall.Net::Biofall.Net.SessionDirector
+  ShowTopMostFoldoutHeaderGroup: 1
+  roster: {fileID: 3763773882492208960}
+--- !u!114 &8358458834582803070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fdeb7ae8117a4c9fbce64c91f6ec792, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Biofall.Net::Biofall.Net.PlayerSpawner
+  ShowTopMostFoldoutHeaderGroup: 1
+  director: {fileID: 271180108064049580}
+  playerPrefab: {fileID: 1600185449547926264, guid: f27edaf22b489433da5a863b35937c75, type: 3}
+--- !u!114 &8157617703395695543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720470978065024992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18f2d9bddae614738baf24cbd8a4333d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Biofall.Net::Biofall.Net.RunSceneFlow
+  director: {fileID: 271180108064049580}
+  lobbyScene: MainMenu
+  runScene: Mission_1_Coop

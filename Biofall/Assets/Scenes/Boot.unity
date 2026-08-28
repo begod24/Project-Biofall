@@ -714,6 +714,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Biofall.Core::Biofall.Core.Bootstrap
   installers: []
+  servicesPrefab: {fileID: 1915086185469131507, guid: fac9d6cc84d4b40e688e72b6c4b6b15e, type: 3}
   upgradeCatalog: {fileID: 0}
 --- !u!4 &1903247581
 Transform:

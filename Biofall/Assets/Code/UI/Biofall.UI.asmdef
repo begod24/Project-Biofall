@@ -7,6 +7,7 @@
         "Biofall.Net",
         "Biofall.Gameplay",
         "Unity.Netcode.Runtime",
+        "Unity.Collections",
         "Unity.InputSystem",
         "Unity.TextMeshPro",
         "UnityEngine.UI",

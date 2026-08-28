@@ -21,6 +21,12 @@ namespace Biofall.Core
                  "torn down in reverse.")]
         [SerializeField] private ServiceInstaller[] installers = Array.Empty<ServiceInstaller>();
 
+        [Tooltip("Prefab carrying the services that live above Core -- the network stack. The " +
+                 "root instantiates it and runs every ServiceInstaller on it, so a scene entered " +
+                 "directly gets the same set as the boot scene, and only the winning root ever " +
+                 "creates a NetworkManager.")]
+        [SerializeField] private GameObject servicesPrefab;
+
         [Header("Content")]
         [Tooltip("Upgrade catalogue driving meta-progression. Falls back to " +
                  "Resources/UpgradeCatalog when left empty.")]
@@ -54,6 +60,8 @@ namespace Biofall.Core
             _eventBus = new EventBus();
 
             ServiceLocator.Register<IEventBus>(_eventBus);
+            ServiceLocator.Register<ISceneLoader>(new SceneLoader(_eventBus));
+            ServiceLocator.Register<IGameStateService>(new GameStateMachine(_eventBus));
 
             // Applies the stored resolution in its constructor, so it is built before anything
             // that reads a volume in its own Awake.
@@ -67,7 +75,19 @@ namespace Biofall.Core
 
             EnsurePoolService();
 
-            _ordered = installers.Where(i => i != null).OrderBy(i => i.Order).ToArray();
+            var found = new System.Collections.Generic.List<ServiceInstaller>();
+            foreach (var installer in installers)
+                if (installer != null) found.Add(installer);
+
+            if (servicesPrefab != null)
+            {
+                var services = Instantiate(servicesPrefab);
+                services.name = servicesPrefab.name;
+                DontDestroyOnLoad(services);
+                found.AddRange(services.GetComponentsInChildren<ServiceInstaller>(true));
+            }
+
+            _ordered = found.OrderBy(i => i.Order).ToArray();
             foreach (var installer in _ordered) installer.Install();
         }
 
