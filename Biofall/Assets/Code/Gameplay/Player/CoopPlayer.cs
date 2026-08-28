@@ -1,4 +1,5 @@
 using System.Collections;
+using Biofall.Data;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -66,6 +67,60 @@ namespace Biofall.Gameplay
             Vector3 dir = transform.position - from;
             dir.y = 0f;
             health.TakeDamage(new DamageInfo(amount, transform.position, dir.normalized, null));
+        }
+
+        // ---- Hitscan: the client asks, the server decides -------------------------------
+        //
+        // Movement and aim are owner-authoritative, so the client's raycast is the only aim
+        // that exists and the probe must run there. That makes the request untrusted, so the
+        // server re-derives everything that matters -- exactly the split Office uses in
+        // PlayerAttacker:
+        //
+        //   what was hit  -> server re-resolves the reference and re-checks reach from its copy
+        //   which weapon  -> server reads the slot out of its own WeaponController
+        //   how often     -> server keeps the cooldown clock, with tolerance for honest jitter
+        //   how much      -> server reads damage from its own WeaponData
+        //
+        // Pellets travel as a count, not as one request each: a shotgun blast into a crowd used
+        // to be one reliable RPC per pellet per enemy.
+        private float _serverNextShotAllowed;
+
+        public void RequestHits(int weaponSlot, CoopEnemy enemy, int pellets, Vector3 hitPoint, Vector3 dir)
+        {
+            if (!IsOwner || enemy == null) return;
+            RequestHitsRpc(new NetworkObjectReference(enemy.NetworkObject), weaponSlot, pellets, hitPoint, dir);
+        }
+
+        [Rpc(SendTo.Server)]
+        private void RequestHitsRpc(NetworkObjectReference target, int weaponSlot, int pellets,
+            Vector3 hitPoint, Vector3 dir, RpcParams rpcParams = default)
+        {
+            if (rpcParams.Receive.SenderClientId != OwnerClientId) return;
+
+            if (!target.TryGet(out NetworkObject targetObject)) return;
+            var enemy = targetObject.GetComponent<CoopEnemy>();
+            if (enemy == null) return;
+
+            var controller = GetComponent<WeaponController>();
+            Weapon weapon = controller != null ? controller.WeaponAt(weaponSlot) : null;
+            if (weapon == null || weapon.Data == null) return;
+
+            WeaponData weaponData = weapon.Data;
+
+            // How often. One clock per player, shared by every target hit in the same shot.
+            float cooldown = 1f / Mathf.Max(0.01f, weaponData.fireRate);
+            float earliest = _serverNextShotAllowed - cooldown * CombatTolerances.Cooldown;
+            if (Time.time < earliest) return;
+            _serverNextShotAllowed = Time.time + cooldown;
+
+            // How many. A shot cannot land more pellets than the weapon fires.
+            int allowed = Mathf.Clamp(pellets, 1, Mathf.Max(1, weaponData.pelletsPerShot));
+
+            // What was hit, from the server's own copy of both bodies.
+            float reach = weaponData.range * CombatTolerances.Reach;
+            if ((enemy.transform.position - transform.position).sqrMagnitude > reach * reach) return;
+
+            enemy.ServerApplyDamage(weaponData.damage * allowed, hitPoint, dir);
         }
 
         public void BroadcastFireFx(int weaponSlot, Vector3 origin, Vector3 direction)

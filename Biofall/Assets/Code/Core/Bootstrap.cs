@@ -1,4 +1,5 @@
 using System;
+using Biofall.Data;
 using System.Linq;
 using UnityEngine;
 
@@ -27,6 +28,11 @@ namespace Biofall.Core
 
         private static bool s_hasBooted;
 
+        // Only the instance that actually booted may tear the services down. Without this a
+        // duplicate in a later scene destroys itself, and its OnDestroy wipes the locator the
+        // real root populated. Office never hits this because it keeps exactly one root.
+        private bool _isRoot;
+
         private EventBus _eventBus;
         private ServiceInstaller[] _ordered = Array.Empty<ServiceInstaller>();
 
@@ -42,6 +48,7 @@ namespace Biofall.Core
             }
 
             s_hasBooted = true;
+            _isRoot = true;
             DontDestroyOnLoad(gameObject);
 
             _eventBus = new EventBus();
@@ -66,7 +73,7 @@ namespace Biofall.Core
 
         private void OnDestroy()
         {
-            if (!s_hasBooted) return;
+            if (!_isRoot) return;
 
             for (int i = _ordered.Length - 1; i >= 0; i--) _ordered[i].Uninstall();
 

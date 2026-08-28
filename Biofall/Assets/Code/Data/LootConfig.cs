@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Gameplay
+namespace Biofall.Data
 {
     [System.Serializable]
     public class LootEntry

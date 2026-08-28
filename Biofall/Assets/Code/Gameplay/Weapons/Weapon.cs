@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using Biofall.Data;
 using Biofall.Core;
 using Biofall.Net;
 
@@ -37,6 +39,13 @@ namespace Biofall.Gameplay
         private static readonly int ReloadId = Animator.StringToHash("Reload");
 
         public bool InfiniteAmmo => data != null && data.infiniteAmmo;
+
+        // Read by the server when it re-derives a hit it did not witness.
+        public WeaponData Data => data;
+
+        // Pellets that landed on the same enemy this shot, so one trigger pull costs one
+        // request per enemy instead of one per pellet.
+        private static readonly Dictionary<CoopEnemy, int> s_pelletHits = new(8);
 
         private void Awake()
         {
@@ -149,11 +158,15 @@ namespace Biofall.Gameplay
 
             // One trigger pull = one round, but it can spit several pellets in a cone (shotgun).
             int pellets = Mathf.Max(1, data.pelletsPerShot);
+            s_pelletHits.Clear();
+
             for (int i = 0; i < pellets; i++)
             {
                 Vector3 dir = pellets > 1 ? ApplySpread(baseDir, data.spreadAngle) : baseDir;
                 FirePellet(origin, dir);
             }
+
+            SendHitRequests(baseDir);
 
             // Muzzle flash, SFX, animation and network FX fire once per shot, not per pellet.
             SpawnFromPool(data.muzzleFlashPrefab, origin, Quaternion.LookRotation(baseDir));
@@ -172,8 +185,15 @@ namespace Biofall.Gameplay
             {
                 if (NetSession.InCoop)
                 {
+                    // Only tally here. Nothing is sent until the whole shot has been traced,
+                    // and the server decides the damage either way.
                     var coopEnemy = hit.collider.GetComponentInParent<CoopEnemy>();
-                    if (coopEnemy != null) coopEnemy.DamageRpc(data.damage, hit.point, direction);
+                    if (coopEnemy != null)
+                    {
+                        s_pelletHits.TryGetValue(coopEnemy, out int n);
+                        s_pelletHits[coopEnemy] = n + 1;
+                        _lastHitPoint = hit.point;
+                    }
                 }
                 else
                 {
@@ -183,6 +203,20 @@ namespace Biofall.Gameplay
             }
 
             SpawnTracer(origin, Quaternion.LookRotation(direction));
+        }
+
+        private Vector3 _lastHitPoint;
+
+        private void SendHitRequests(Vector3 baseDir)
+        {
+            if (!NetSession.InCoop || _coopPlayer == null || _weaponController == null) return;
+            if (s_pelletHits.Count == 0) return;
+
+            int slot = _weaponController.ActiveSlot;
+            foreach (var pair in s_pelletHits)
+                _coopPlayer.RequestHits(slot, pair.Key, pair.Value, _lastHitPoint, baseDir);
+
+            s_pelletHits.Clear();
         }
 
         // Random horizontal deflection inside the spread cone (top-down, so spread stays on the XZ plane).

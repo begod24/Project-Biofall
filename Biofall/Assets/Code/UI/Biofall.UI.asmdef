@@ -2,6 +2,7 @@
     "name": "Biofall.UI",
     "rootNamespace": "Biofall.UI",
     "references": [
+        "Biofall.Data",
         "Biofall.Core",
         "Biofall.Net",
         "Biofall.Gameplay",

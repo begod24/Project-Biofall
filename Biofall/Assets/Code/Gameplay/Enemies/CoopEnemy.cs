@@ -93,8 +93,19 @@ namespace Biofall.Gameplay
             if (NetworkObject != null && NetworkObject.IsSpawned) NetworkObject.Despawn(true);
         }
 
+        // Server-side entry point. The amount is decided by the server (see
+        // CoopPlayer.RequestHitsRpc), never sent by the client.
+        public void ServerApplyDamage(float amount, Vector3 point, Vector3 dir)
+        {
+            if (!IsServer) return;
+            _health.TakeDamage(new DamageInfo(amount, point, dir, null));
+        }
+
+        // TODO (Stage 8): grenades are not networked yet, so the thrower still names its own
+        // damage. This is the last unvalidated damage path left; it dies when ThrownGrenade
+        // becomes a server-spawned NetworkObject.
         [Rpc(SendTo.Server)]
-        public void DamageRpc(float amount, Vector3 point, Vector3 dir)
+        public void UnvalidatedDamageRpc(float amount, Vector3 point, Vector3 dir)
         {
             _health.TakeDamage(new DamageInfo(amount, point, dir, null));
         }

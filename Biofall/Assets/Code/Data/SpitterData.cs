@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Gameplay
+namespace Biofall.Data
 {
     // Stationary acid-spitter ("Spitter"/зонёр). Reuses the Screamer model + animator but, instead
     // of a screaming shockwave, lobs a lingering acid pool at the player's feet that hurts over time.

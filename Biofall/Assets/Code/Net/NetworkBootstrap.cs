@@ -1,4 +1,5 @@
 using UnityEngine;
+using Biofall.Data;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 
@@ -126,7 +127,7 @@ namespace Biofall.Net
         public void LeaveToMainMenu()
         {
             Shutdown();
-            UnityEngine.SceneManagement.SceneManager.LoadScene(Biofall.Core.GameScenes.MainMenu);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(Biofall.Data.GameScenes.MainMenu);
         }
 
         private void Configure(string serverAddress, string listenAddress)

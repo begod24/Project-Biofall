@@ -2,6 +2,7 @@
     "name": "Biofall.Net",
     "rootNamespace": "Biofall.Net",
     "references": [
+        "Biofall.Data",
         "Biofall.Core",
         "Unity.Netcode.Runtime",
         "Unity.Collections",

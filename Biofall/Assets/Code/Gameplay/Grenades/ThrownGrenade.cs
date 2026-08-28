@@ -79,7 +79,7 @@ namespace Biofall.Gameplay
                 {
                     var coopEnemy = s_hits[i].GetComponentInParent<CoopEnemy>();
                     if (coopEnemy == null || !s_seenCoop.Add(coopEnemy)) continue;
-                    coopEnemy.DamageRpc(damage, s_hits[i].transform.position, dir);
+                    coopEnemy.UnvalidatedDamageRpc(damage, s_hits[i].transform.position, dir);
                 }
                 else
                 {

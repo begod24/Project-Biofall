@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Gameplay
+namespace Biofall.Data
 {
     [CreateAssetMenu(menuName = "Biofall/Enemy Data", fileName = "EN_Enemy")]
     public class EnemyData : ScriptableObject

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Gameplay
+namespace Biofall.Data
 {
     [CreateAssetMenu(menuName = "Biofall/Screamer Data", fileName = "EN_Screamer")]
     public sealed class ScreamerData : EnemyData

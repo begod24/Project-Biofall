@@ -1,3 +1,4 @@
+using Biofall.Data;
 namespace Biofall.Core
 {
     // Meta-progression that outlives a run: the bank and the purchased upgrade levels.

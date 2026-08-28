@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Core
+namespace Biofall.Data
 {
     [CreateAssetMenu(menuName = "Biofall/Upgrade Catalog", fileName = "UpgradeCatalog")]
     public sealed class UpgradeCatalog : ScriptableObject

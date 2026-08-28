@@ -2,6 +2,7 @@
     "name": "Biofall.Editor",
     "rootNamespace": "Biofall.Editor",
     "references": [
+        "Biofall.Data",
         "Biofall.Core",
         "Biofall.Net",
         "Biofall.Gameplay",

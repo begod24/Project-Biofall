@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Core
+namespace Biofall.Data
 {
     public enum UpgradeStat
     {

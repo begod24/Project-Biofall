@@ -1,4 +1,4 @@
-namespace Biofall.Core
+namespace Biofall.Data
 {
     public static class GameScenes
     {

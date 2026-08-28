@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Biofall.Gameplay
+namespace Biofall.Data
 {
     [CreateAssetMenu(menuName = "Biofall/Weapon Data", fileName = "WD_Weapon")]
     public sealed class WeaponData : ScriptableObject

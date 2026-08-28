@@ -2,6 +2,7 @@
     "name": "Biofall.Core",
     "rootNamespace": "Biofall.Core",
     "references": [
+        "Biofall.Data",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],
