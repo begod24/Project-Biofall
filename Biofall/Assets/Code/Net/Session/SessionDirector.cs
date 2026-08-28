@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Biofall.Core;
 using Biofall.Data;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -27,6 +28,11 @@ namespace Biofall.Net
 
         private readonly NetworkVariable<GameState> _phase = new(GameState.Lobby);
 
+        // Which scene this run takes place in. Office has one run scene and a constant; Biofall
+        // has several (campaign mission, wave mode), so the host names it when it starts the run
+        // and every client reads it off the wire instead of guessing.
+        private readonly NetworkVariable<FixedString64Bytes> _runScene = new();
+
         private readonly HashSet<ulong> _sceneReady = new();
 
         private const float TerminalDwellSeconds = 3.5f;
@@ -36,6 +42,8 @@ namespace Biofall.Net
         private bool _ending;
 
         public GameState Phase => _phase.Value;
+
+        public string RunScene => _runScene.Value.ToString();
 
         public bool IsHostClient => IsServer;
 
@@ -81,7 +89,7 @@ namespace Biofall.Net
         }
 
         [Rpc(SendTo.Server)]
-        public void RequestStartRunRpc(RpcParams rpcParams = default)
+        public void RequestStartRunRpc(FixedString64Bytes runScene, RpcParams rpcParams = default)
         {
             if (rpcParams.Receive.SenderClientId != NetworkManager.ServerClientId)
             {
@@ -97,7 +105,14 @@ namespace Biofall.Net
                 return;
             }
 
+            if (runScene.Length == 0)
+            {
+                Debug.LogError("[Session] Start refused: no run scene named.");
+                return;
+            }
+
             _sceneReady.Clear();
+            _runScene.Value = runScene;
             TrySetPhase(GameState.Loading);
         }
 

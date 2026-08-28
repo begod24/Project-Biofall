@@ -32,6 +32,9 @@ namespace Biofall.Core
                  "Resources/UpgradeCatalog when left empty.")]
         [SerializeField] private UpgradeCatalog upgradeCatalog;
 
+        [Tooltip("The four operatives. Falls back to Resources/OperativeCatalog when empty.")]
+        [SerializeField] private OperativeCatalog operativeCatalog;
+
         private static bool s_hasBooted;
 
         // Only the instance that actually booted may tear the services down. Without this a
@@ -73,6 +76,11 @@ namespace Biofall.Core
 
             ServiceLocator.Register(new RunState(_eventBus));
 
+            var settingsStore = new PlayerPrefsSettingsStore();
+            ServiceLocator.Register<IOperativeService>(
+                new OperativeService(ResolveOperatives(), settingsStore));
+            ServiceLocator.Register<ICampaignState>(new CampaignState(settingsStore));
+
             EnsurePoolService();
 
             var found = new System.Collections.Generic.List<ServiceInstaller>();
@@ -100,6 +108,17 @@ namespace Biofall.Core
             _eventBus?.Clear();
             ServiceLocator.Clear();
             s_hasBooted = false;
+        }
+
+        private OperativeCatalog ResolveOperatives()
+        {
+            if (operativeCatalog != null) return operativeCatalog;
+
+            var loaded = Resources.Load<OperativeCatalog>("OperativeCatalog");
+            if (loaded == null)
+                Debug.LogWarning("[Bootstrap] No OperativeCatalog assigned and none at " +
+                                 "Resources/OperativeCatalog — operative selection is inert.");
+            return loaded;
         }
 
         private UpgradeCatalog ResolveCatalog()

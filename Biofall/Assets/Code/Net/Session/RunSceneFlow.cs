@@ -19,8 +19,9 @@ namespace Biofall.Net
         [SerializeField] private SessionDirector director;
         [Tooltip("Scene the squad waits in between runs.")]
         [SerializeField] private string lobbyScene = GameScenes.MainMenu;
-        [Tooltip("Scene the run takes place in.")]
-        [SerializeField] private string runScene = GameScenes.MissionCoop;
+        [Tooltip("Fallback only. The real run scene is named by the host and replicated by " +
+                 "SessionDirector, so campaign and wave mode can share one session layer.")]
+        [SerializeField] private string fallbackRunScene = GameScenes.MissionCoop;
 
         private NetworkManager _manager;
         private string _awaitingScene;
@@ -46,8 +47,9 @@ namespace Biofall.Net
             switch (phase)
             {
                 case GameState.Loading:
-                    _awaitingScene = runScene;
-                    ServerLoad(runScene);
+                    string target = ResolveRunScene();
+                    _awaitingScene = target;
+                    ServerLoad(target);
                     break;
 
                 case GameState.Lobby:
@@ -55,6 +57,12 @@ namespace Biofall.Net
                     ServerLoad(lobbyScene);
                     break;
             }
+        }
+
+        private string ResolveRunScene()
+        {
+            string named = director != null ? director.RunScene : null;
+            return string.IsNullOrEmpty(named) ? fallbackRunScene : named;
         }
 
         // Only the server asks; NGO pushes the load to everyone, host included.

@@ -182,8 +182,6 @@ namespace Biofall.Gameplay
         private void OnNetworkSceneEvent(SceneEvent sceneEvent)
         {
             if (!IsOwner) return;
-            if (sceneEvent.SceneName != GameScenes.MissionCoop) return;
-
             if (sceneEvent.SceneEventType == SceneEventType.LoadComplete ||
                 sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted ||
                 sceneEvent.SceneEventType == SceneEventType.SynchronizeComplete)
@@ -206,13 +204,6 @@ namespace Biofall.Gameplay
 
             yield return null;
             yield return null;
-
-            if (SceneManager.GetActiveScene().name != GameScenes.MissionCoop)
-            {
-                BindLocalCamera();
-                _ownerSceneRefresh = null;
-                yield break;
-            }
 
             for (int i = 0; i < 3; i++)
             {

@@ -19,7 +19,9 @@ namespace Biofall.Net
 
         bool TryGetSlot(int index, out PlayerSlot slot);
         void SetReady(bool ready);
-        void RequestStartRun();
+        string RunScene { get; }
+
+        void RequestStartRun(string runScene);
         void RequestEndRun();
     }
 }

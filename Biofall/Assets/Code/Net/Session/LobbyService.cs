@@ -43,9 +43,11 @@ namespace Biofall.Net
             if (IsAvailable) _roster.SetReadyRpc(ready);
         }
 
-        public void RequestStartRun()
+        public string RunScene => IsAvailable ? _director.RunScene : string.Empty;
+
+        public void RequestStartRun(string runScene)
         {
-            if (IsAvailable) _director.RequestStartRunRpc();
+            if (IsAvailable) _director.RequestStartRunRpc(runScene);
         }
 
         public void RequestEndRun()
