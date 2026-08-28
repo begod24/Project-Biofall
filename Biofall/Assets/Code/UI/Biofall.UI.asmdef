@@ -1,0 +1,23 @@
+{
+    "name": "Biofall.UI",
+    "rootNamespace": "Biofall.UI",
+    "references": [
+        "Biofall.Core",
+        "Biofall.Net",
+        "Biofall.Gameplay",
+        "Unity.Netcode.Runtime",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

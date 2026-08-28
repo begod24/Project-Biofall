@@ -7,6 +7,9 @@ namespace Biofall.Gameplay.Mission1
 {
     public sealed class MissionDirector : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Defense waves")]
         [Tooltip("SOLO spawner driven during the beacon defense (its SpawnNow batch = one wave).")]
         [SerializeField] private EnemySpawner defenseSpawner;
@@ -27,20 +30,20 @@ namespace Biofall.Gameplay.Mission1
         {
             if (NetSession.InCoop && !NetSession.IsServer) { enabled = false; return; }
 
-            EventBus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Subscribe<BeaconActivated>(OnBeaconActivated);
-            EventBus.Subscribe<BeaconCharged>(OnBeaconCharged);
-            EventBus.Subscribe<MissionCompleted>(OnMissionCompleted);
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Subscribe<BeaconActivated>(OnBeaconActivated);
+            Bus.Subscribe<BeaconCharged>(OnBeaconCharged);
+            Bus.Subscribe<MissionCompleted>(OnMissionCompleted);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
-            EventBus.Unsubscribe<BeaconActivated>(OnBeaconActivated);
-            EventBus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
-            EventBus.Unsubscribe<MissionCompleted>(OnMissionCompleted);
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<GeneratorActivated>(OnGeneratorActivated);
+            Bus.Unsubscribe<BeaconActivated>(OnBeaconActivated);
+            Bus.Unsubscribe<BeaconCharged>(OnBeaconCharged);
+            Bus.Unsubscribe<MissionCompleted>(OnMissionCompleted);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
         }
 
         private void Start()
@@ -80,7 +83,7 @@ namespace Biofall.Gameplay.Mission1
         private void SetPhase(MissionPhase phase)
         {
             _phase = phase;
-            EventBus.Publish(new MissionPhaseChanged(phase));
+            Bus.Publish(new MissionPhaseChanged(phase));
         }
 
         private IEnumerator WaveLoop()

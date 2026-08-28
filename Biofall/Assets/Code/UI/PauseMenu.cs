@@ -9,6 +9,9 @@ namespace Biofall.UI
 {
     public sealed class PauseMenu : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject panel;
         [SerializeField] private Button resumeButton;
         [SerializeField] private Button settingsButton;
@@ -47,8 +50,8 @@ namespace Biofall.UI
             if (panel != null) panel.SetActive(true);
         }
 
-        private void OnEnable() => EventBus.Subscribe<PlayerDied>(OnPlayerDied);
-        private void OnDisable() => EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+        private void OnEnable() => Bus.Subscribe<PlayerDied>(OnPlayerDied);
+        private void OnDisable() => Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
 
         private void OnPlayerDied(PlayerDied _) => _locked = true;
 

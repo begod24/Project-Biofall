@@ -11,6 +11,9 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(EnemyMovement))]
     public sealed class Enemy : MonoBehaviour, IPoolable
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private EnemyData data;
         [SerializeField] private Animator animator;
         [SerializeField] private EnemyMovement movement;
@@ -209,7 +212,7 @@ namespace Biofall.Gameplay
 
         private void OnDamaged(DamageInfo info, float current)
         {
-            EventBus.Publish(new TargetDamaged(gameObject, current, info.Amount));
+            Bus.Publish(new TargetDamaged(gameObject, current, info.Amount));
             PlayHitFx(info);
             if (healthBar != null && _health.Max > 0f) healthBar.Set(current / _health.Max);
             movement.AddKnockback(info.HitDirection.normalized * data.knockbackForce);
@@ -234,7 +237,7 @@ namespace Biofall.Gameplay
         private void OnDied()
         {
             if (_dead) return;
-            EventBus.Publish(new TargetDied(gameObject));
+            Bus.Publish(new TargetDied(gameObject));
             PlayDeathFx();
         }
 

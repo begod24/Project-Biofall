@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using Biofall.Core;
-using Biofall.Gameplay;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     public enum LifeState : byte
     {
@@ -16,6 +16,9 @@ namespace Biofall.Net
     [RequireComponent(typeof(NetworkObject))]
     public sealed class CoopPlayerLife : NetworkBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Downed / revive (tunable)")]
         [Tooltip("Seconds a downed player survives before bleeding out to Dead, if not revived.")]
         [SerializeField] private float bleedOutSeconds = 30f;
@@ -191,7 +194,7 @@ namespace Biofall.Net
         }
 
         [Rpc(SendTo.Everyone)]
-        private void TeamWipeRpc() => EventBus.Publish(new TeamWiped());
+        private void TeamWipeRpc() => Bus.Publish(new TeamWiped());
 
         private void OnStateChanged(LifeState previous, LifeState current)
         {
@@ -199,7 +202,7 @@ namespace Biofall.Net
             ApplyPose(current);
 
             if (!IsOwner && previous == LifeState.Alive && current == LifeState.Downed)
-                EventBus.Publish(new TeammateDowned(transform));
+                Bus.Publish(new TeammateDowned(transform));
 
             if (!IsOwner) return;
 
@@ -230,7 +233,7 @@ namespace Biofall.Net
             GetComponent<CoopPlayer>()?.SetControllable(false);
             PlayerRegistry.SetLocal(transform);
             PlayerRegistry.SetDowned(transform, true);
-            EventBus.Publish(new PlayerDowned(bleedOutSeconds));
+            Bus.Publish(new PlayerDowned(bleedOutSeconds));
         }
 
         private void ReviveOwner()
@@ -239,14 +242,14 @@ namespace Biofall.Net
             GetComponent<CoopPlayer>()?.SetControllable(true);
             PlayerRegistry.SetLocal(transform);
             PlayerRegistry.SetDowned(transform, false);
-            EventBus.Publish(new PlayerRevived());
+            Bus.Publish(new PlayerRevived());
         }
 
         private void EliminateOwner()
         {
             GetComponent<CoopPlayer>()?.SetControllable(false);
             BeginSpectate();
-            EventBus.Publish(new PlayerEliminated());
+            Bus.Publish(new PlayerEliminated());
         }
 
         private void BeginSpectate()

@@ -4,7 +4,18 @@ namespace Biofall.Net
 {
     public static class NetSession
     {
-        public static bool InCoop { get; internal set; }
+        private static bool _inCoop;
+
+        public static bool InCoop
+        {
+            get => _inCoop;
+            internal set
+            {
+                _inCoop = value;
+                // The owner's body claims the local slot explicitly once a session is up.
+                Core.PlayerRegistry.AutoPromoteFirstToLocal = !value;
+            }
+        }
 
         private static NetworkManager NM => NetworkManager.Singleton;
 

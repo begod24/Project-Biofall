@@ -1,4 +1,4 @@
-namespace Biofall.UI
+namespace Biofall.Core
 {
     public static class UiOverlay
     {

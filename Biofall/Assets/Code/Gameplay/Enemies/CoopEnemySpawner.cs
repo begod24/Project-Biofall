@@ -3,9 +3,9 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 using Biofall.Core;
-using Biofall.Gameplay;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     public sealed class CoopEnemySpawner : MonoBehaviour
     {

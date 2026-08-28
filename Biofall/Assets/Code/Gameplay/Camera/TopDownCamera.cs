@@ -5,6 +5,12 @@ namespace Biofall.Gameplay
 {
     public sealed class TopDownCamera : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
+        private ISettingsService _settingsService;
+        private ISettingsService SettingsService =>
+            _settingsService ??= ServiceLocator.Get<ISettingsService>();
         [Header("Target")]
         [Tooltip("Optional. If empty, uses PlayerRegistry.Player.")]
         [SerializeField] private Transform target;
@@ -42,26 +48,26 @@ namespace Biofall.Gameplay
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDamaged>(OnPlayerDamaged);
-            EventBus.Subscribe<CameraShake>(OnCameraShake);
+            Bus.Subscribe<PlayerDamaged>(OnPlayerDamaged);
+            Bus.Subscribe<CameraShake>(OnCameraShake);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDamaged>(OnPlayerDamaged);
-            EventBus.Unsubscribe<CameraShake>(OnCameraShake);
+            Bus.Unsubscribe<PlayerDamaged>(OnPlayerDamaged);
+            Bus.Unsubscribe<CameraShake>(OnCameraShake);
         }
 
         private void OnPlayerDamaged(PlayerDamaged e)
         {
-            float intensity = GameSettings.CameraShakeIntensity;
+            float intensity = SettingsService.CameraShakeIntensity;
             if (intensity <= 0f) return;
             if (e.Amount > 0f) _shake = shakeAmplitude * intensity;
         }
 
         private void OnCameraShake(CameraShake e)
         {
-            float intensity = GameSettings.CameraShakeIntensity;
+            float intensity = SettingsService.CameraShakeIntensity;
             if (intensity <= 0f) return;
             float amplitude = e.Amplitude * intensity;
             if (amplitude > _shake) _shake = amplitude;

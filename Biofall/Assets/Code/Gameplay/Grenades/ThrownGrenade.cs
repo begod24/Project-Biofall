@@ -8,6 +8,9 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(Rigidbody))]
     public sealed class ThrownGrenade : MonoBehaviour, IPoolable
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Explosion")]
         [Tooltip("Seconds before it detonates — kept ~= the thrower's flight time so it blows up on arrival at the aim point.")]
         [SerializeField] private float fuse = 0.55f;
@@ -89,7 +92,7 @@ namespace Biofall.Gameplay
             if (explosionPrefab != null && PoolService.Instance != null)
                 PoolService.Instance.Spawn(explosionPrefab, center, Quaternion.identity);
 
-            EventBus.Publish(new CameraShake(shakeAmplitude));
+            Bus.Publish(new CameraShake(shakeAmplitude));
             if (explodeSfx != null) AudioSource.PlayClipAtPoint(explodeSfx, center, sfxVolume);
 
             Despawn();

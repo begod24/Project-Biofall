@@ -10,6 +10,9 @@ namespace Biofall.UI
 {
     public sealed class MissionCompleteUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject panel;
         [SerializeField] private Button replayButton;
         [SerializeField] private Button mainMenuButton;
@@ -30,8 +33,8 @@ namespace Biofall.UI
             if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ToMainMenu);
         }
 
-        private void OnEnable() => EventBus.Subscribe<MissionCompleted>(OnCompleted);
-        private void OnDisable() => EventBus.Unsubscribe<MissionCompleted>(OnCompleted);
+        private void OnEnable() => Bus.Subscribe<MissionCompleted>(OnCompleted);
+        private void OnDisable() => Bus.Unsubscribe<MissionCompleted>(OnCompleted);
 
         private void OnCompleted(MissionCompleted _)
         {

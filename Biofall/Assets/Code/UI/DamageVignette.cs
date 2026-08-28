@@ -6,6 +6,9 @@ namespace Biofall.UI
 {
     public sealed class DamageVignette : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private Image image;
         [SerializeField] private Color color = new Color(0.45f, 0f, 0.03f, 1f);
 
@@ -32,14 +35,14 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDamaged>(OnDamaged);
-            EventBus.Subscribe<PlayerDied>(OnDied);
+            Bus.Subscribe<PlayerDamaged>(OnDamaged);
+            Bus.Subscribe<PlayerDied>(OnDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDamaged>(OnDamaged);
-            EventBus.Unsubscribe<PlayerDied>(OnDied);
+            Bus.Unsubscribe<PlayerDamaged>(OnDamaged);
+            Bus.Unsubscribe<PlayerDied>(OnDied);
         }
 
         private void OnDamaged(PlayerDamaged e)

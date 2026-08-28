@@ -8,6 +8,10 @@ namespace Biofall.UI
 {
     public sealed class UpgradeShopUI : MonoBehaviour
     {
+
+        private IProgressionService _progression;
+        private IProgressionService Progression =>
+            _progression ??= ServiceLocator.Get<IProgressionService>();
         [SerializeField] private GameObject panel;
         [SerializeField] private TMP_Text bankedText;
         [Tooltip("Container with a VerticalLayoutGroup; rows are added under it.")]
@@ -27,8 +31,8 @@ namespace Biofall.UI
             if (panel != null) panel.SetActive(false);
         }
 
-        private void OnEnable() => PlayerProgression.Changed += OnChanged;
-        private void OnDisable() => PlayerProgression.Changed -= OnChanged;
+        private void OnEnable() => Progression.Changed += OnChanged;
+        private void OnDisable() => Progression.Changed -= OnChanged;
 
         public void Open()
         {
@@ -47,7 +51,7 @@ namespace Biofall.UI
             if (_built) return;
             _built = true;
 
-            var catalog = PlayerProgression.Catalog;
+            var catalog = Progression.Catalog;
             if (catalog == null || catalog.Upgrades == null || rowTemplate == null || rowsParent == null) return;
 
             rowTemplate.SetActive(false);
@@ -66,14 +70,14 @@ namespace Biofall.UI
 
         private void Buy(UpgradeData data)
         {
-            PlayerProgression.TryPurchase(data);
+            Progression.TryPurchase(data);
         }
 
         private void OnChanged() => RefreshAll();
 
         private void RefreshAll()
         {
-            if (bankedText != null) bankedText.text = PlayerProgression.BankedSamples + " BS";
+            if (bankedText != null) bankedText.text = Progression.BankedSamples + " BS";
             for (int i = 0; i < _rows.Count; i++)
                 if (_rows[i] != null) _rows[i].Refresh();
         }

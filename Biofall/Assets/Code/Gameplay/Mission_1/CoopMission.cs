@@ -2,13 +2,16 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using Biofall.Core;
-using Biofall.Gameplay.Mission1;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay.Mission1
 {
     [RequireComponent(typeof(NetworkObject))]
     public sealed class CoopMission : NetworkBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         public static CoopMission Instance { get; private set; }
 
         [SerializeField] private GeneratorStation generator;
@@ -31,17 +34,17 @@ namespace Biofall.Net
 
             if (IsServer)
             {
-                EventBus.Subscribe<MissionPhaseChanged>(OnPhaseServer);
-                EventBus.Subscribe<MissionProgress>(OnProgressServer);
-                EventBus.Subscribe<GeneratorActivated>(OnGeneratorServer);
-                EventBus.Subscribe<BeaconActivated>(OnBeaconServer);
-                EventBus.Subscribe<BeaconCharged>(OnChargedServer);
-                EventBus.Subscribe<MissionCompleted>(OnCompletedServer);
+                Bus.Subscribe<MissionPhaseChanged>(OnPhaseServer);
+                Bus.Subscribe<MissionProgress>(OnProgressServer);
+                Bus.Subscribe<GeneratorActivated>(OnGeneratorServer);
+                Bus.Subscribe<BeaconActivated>(OnBeaconServer);
+                Bus.Subscribe<BeaconCharged>(OnChargedServer);
+                Bus.Subscribe<MissionCompleted>(OnCompletedServer);
             }
             else
             {
                 _phase.OnValueChanged += OnPhaseClient;
-                EventBus.Publish(new MissionPhaseChanged(_phase.Value));
+                Bus.Publish(new MissionPhaseChanged(_phase.Value));
             }
         }
 
@@ -51,12 +54,12 @@ namespace Biofall.Net
 
             if (IsServer)
             {
-                EventBus.Unsubscribe<MissionPhaseChanged>(OnPhaseServer);
-                EventBus.Unsubscribe<MissionProgress>(OnProgressServer);
-                EventBus.Unsubscribe<GeneratorActivated>(OnGeneratorServer);
-                EventBus.Unsubscribe<BeaconActivated>(OnBeaconServer);
-                EventBus.Unsubscribe<BeaconCharged>(OnChargedServer);
-                EventBus.Unsubscribe<MissionCompleted>(OnCompletedServer);
+                Bus.Unsubscribe<MissionPhaseChanged>(OnPhaseServer);
+                Bus.Unsubscribe<MissionProgress>(OnProgressServer);
+                Bus.Unsubscribe<GeneratorActivated>(OnGeneratorServer);
+                Bus.Unsubscribe<BeaconActivated>(OnBeaconServer);
+                Bus.Unsubscribe<BeaconCharged>(OnChargedServer);
+                Bus.Unsubscribe<MissionCompleted>(OnCompletedServer);
             }
             else
             {
@@ -92,13 +95,13 @@ namespace Biofall.Net
         }
 
         private void OnPhaseClient(MissionPhase _, MissionPhase current) =>
-            EventBus.Publish(new MissionPhaseChanged(current));
+            Bus.Publish(new MissionPhaseChanged(current));
 
         [Rpc(SendTo.NotServer)]
         private void ProgressClientRpc(FixedString64Bytes label, float value, bool active)
         {
             string l = label.Length > 0 ? label.ToString() : null;
-            EventBus.Publish(new MissionProgress(l, value, active));
+            Bus.Publish(new MissionProgress(l, value, active));
         }
 
         [Rpc(SendTo.NotServer)]
@@ -106,10 +109,10 @@ namespace Biofall.Net
         {
             switch (id)
             {
-                case 0: EventBus.Publish(new GeneratorActivated()); break;
-                case 1: EventBus.Publish(new BeaconActivated()); break;
-                case 2: EventBus.Publish(new BeaconCharged()); break;
-                case 3: EventBus.Publish(new MissionCompleted()); break;
+                case 0: Bus.Publish(new GeneratorActivated()); break;
+                case 1: Bus.Publish(new BeaconActivated()); break;
+                case 2: Bus.Publish(new BeaconCharged()); break;
+                case 3: Bus.Publish(new MissionCompleted()); break;
             }
         }
 

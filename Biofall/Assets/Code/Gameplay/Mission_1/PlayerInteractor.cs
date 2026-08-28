@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Biofall.Core;
-using Biofall.UI;
 
 namespace Biofall.Gameplay.Mission1
 {
@@ -20,6 +19,9 @@ namespace Biofall.Gameplay.Mission1
     [RequireComponent(typeof(PlayerInput))]
     public sealed class PlayerInteractor : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Tooltip("How close (metres) the player must be to use an interactable.")]
         [SerializeField] private float interactRange = 3f;
 
@@ -90,7 +92,7 @@ namespace Biofall.Gameplay.Mission1
             if (visible == _promptVisible && (!visible || prompt == _lastPrompt)) return;
             _promptVisible = visible;
             _lastPrompt = prompt;
-            EventBus.Publish(new InteractPromptChanged(prompt, visible));
+            Bus.Publish(new InteractPromptChanged(prompt, visible));
         }
 
         private string _lastPrompt;
@@ -100,7 +102,7 @@ namespace Biofall.Gameplay.Mission1
             if (_promptVisible)
             {
                 _promptVisible = false;
-                EventBus.Publish(new InteractPromptChanged(null, false));
+                Bus.Publish(new InteractPromptChanged(null, false));
             }
         }
     }

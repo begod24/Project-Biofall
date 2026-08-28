@@ -2,11 +2,15 @@ using UnityEngine;
 using TMPro;
 using Biofall.Core;
 using Biofall.Net;
+using Biofall.Gameplay;
 
 namespace Biofall.UI
 {
     public sealed class CoopDownedMarker : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private RectTransform marker;
         [SerializeField] private RectTransform arrow;
         [SerializeField] private TMP_Text label;
@@ -21,8 +25,8 @@ namespace Biofall.UI
 
         private Camera _cam;
 
-        private void OnEnable() => EventBus.Subscribe<TeammateDowned>(OnTeammateDowned);
-        private void OnDisable() => EventBus.Unsubscribe<TeammateDowned>(OnTeammateDowned);
+        private void OnEnable() => Bus.Subscribe<TeammateDowned>(OnTeammateDowned);
+        private void OnDisable() => Bus.Unsubscribe<TeammateDowned>(OnTeammateDowned);
 
         private void OnTeammateDowned(TeammateDowned _)
         {

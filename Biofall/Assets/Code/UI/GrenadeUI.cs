@@ -7,6 +7,9 @@ namespace Biofall.UI
 {
     public sealed class GrenadeUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private TMP_Text text;
         [SerializeField] private Graphic icon;
 
@@ -15,8 +18,8 @@ namespace Biofall.UI
             if (text == null) text = GetComponent<TMP_Text>();
         }
 
-        private void OnEnable() => EventBus.Subscribe<GrenadeCountChanged>(OnChanged);
-        private void OnDisable() => EventBus.Unsubscribe<GrenadeCountChanged>(OnChanged);
+        private void OnEnable() => Bus.Subscribe<GrenadeCountChanged>(OnChanged);
+        private void OnDisable() => Bus.Unsubscribe<GrenadeCountChanged>(OnChanged);
 
         private void OnChanged(GrenadeCountChanged e)
         {

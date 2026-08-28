@@ -5,6 +5,9 @@ namespace Biofall.Gameplay
 {
     public sealed class PlayerDeath : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private Animator animator;
         [SerializeField] private PlayerController controller;
         [SerializeField] private PlayerMotor motor;
@@ -20,8 +23,8 @@ namespace Biofall.Gameplay
             if (weapon == null) weapon = GetComponentInChildren<Weapon>();
         }
 
-        private void OnEnable() => EventBus.Subscribe<PlayerDied>(OnPlayerDied);
-        private void OnDisable() => EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
+        private void OnEnable() => Bus.Subscribe<PlayerDied>(OnPlayerDied);
+        private void OnDisable() => Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
 
         private void OnPlayerDied(PlayerDied _)
         {

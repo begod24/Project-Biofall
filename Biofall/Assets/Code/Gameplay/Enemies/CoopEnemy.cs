@@ -1,9 +1,9 @@
 using Unity.Netcode;
 using UnityEngine;
 using Biofall.Core;
-using Biofall.Gameplay;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     [RequireComponent(typeof(NetworkObject))]
     [RequireComponent(typeof(Enemy))]

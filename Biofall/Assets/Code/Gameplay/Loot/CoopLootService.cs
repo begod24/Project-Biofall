@@ -1,20 +1,23 @@
 using Unity.Netcode;
 using UnityEngine;
 using Biofall.Core;
-using Biofall.Gameplay;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     public sealed class CoopLootService : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private LootConfig config;
         [Tooltip("Pickups land lifted off the ground a touch so they don't clip into it.")]
         [SerializeField] private float dropHeight = 0.3f;
         [Tooltip("Random horizontal scatter so multiple drops don't stack on one point.")]
         [SerializeField] private float scatter = 0.5f;
 
-        private void OnEnable() => EventBus.Subscribe<TargetDied>(OnTargetDied);
-        private void OnDisable() => EventBus.Unsubscribe<TargetDied>(OnTargetDied);
+        private void OnEnable() => Bus.Subscribe<TargetDied>(OnTargetDied);
+        private void OnDisable() => Bus.Unsubscribe<TargetDied>(OnTargetDied);
 
         private void OnTargetDied(TargetDied e)
         {

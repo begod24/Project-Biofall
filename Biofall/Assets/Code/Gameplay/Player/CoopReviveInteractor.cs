@@ -1,13 +1,18 @@
 using UnityEngine;
 using Biofall.Core;
-using Biofall.Gameplay;
-using Biofall.UI;
+using Biofall.Net;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     [RequireComponent(typeof(CoopPlayerLife))]
     public sealed class CoopReviveInteractor : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
+        private IProgressionService _progression;
+        private IProgressionService Progression =>
+            _progression ??= ServiceLocator.Get<IProgressionService>();
         private CoopPlayerLife _life;
         private PlayerInput _input;
 
@@ -51,7 +56,7 @@ namespace Biofall.Net
                     _heartbeat = HeartbeatInterval;
                 }
 
-                float hold = _life.ReviveHoldSeconds * PlayerProgression.ReviveHoldMultiplier;
+                float hold = _life.ReviveHoldSeconds * Progression.ReviveHoldMultiplier;
                 _progress += Time.deltaTime / Mathf.Max(0.1f, hold);
                 if (_progress >= 1f)
                 {
@@ -91,7 +96,7 @@ namespace Biofall.Net
         private void Publish(bool show, float progress)
         {
             _showing = true;
-            EventBus.Publish(new ReviveProgress(show, progress));
+            Bus.Publish(new ReviveProgress(show, progress));
         }
 
         private void Clear()
@@ -101,7 +106,7 @@ namespace Biofall.Net
             if (_showing)
             {
                 _showing = false;
-                EventBus.Publish(new ReviveProgress(false, 0f));
+                Bus.Publish(new ReviveProgress(false, 0f));
             }
         }
     }

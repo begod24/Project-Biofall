@@ -9,6 +9,10 @@ namespace Biofall.UI
 {
     public sealed class PauseSettings : MonoBehaviour
     {
+
+        private ISettingsService _settingsService;
+        private ISettingsService SettingsService =>
+            _settingsService ??= ServiceLocator.Get<ISettingsService>();
         [SerializeField] private Slider masterVolumeSlider;
         [SerializeField] private Slider musicVolumeSlider;
         [SerializeField] private Slider shakeSlider;
@@ -27,18 +31,18 @@ namespace Biofall.UI
         {
             if (masterVolumeSlider != null)
             {
-                masterVolumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
-                masterVolumeSlider.onValueChanged.AddListener(GameSettings.SetMasterVolume);
+                masterVolumeSlider.SetValueWithoutNotify(SettingsService.MasterVolume);
+                masterVolumeSlider.onValueChanged.AddListener(SettingsService.SetMasterVolume);
             }
             if (musicVolumeSlider != null)
             {
-                musicVolumeSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
-                musicVolumeSlider.onValueChanged.AddListener(GameSettings.SetMusicVolume);
+                musicVolumeSlider.SetValueWithoutNotify(SettingsService.MusicVolume);
+                musicVolumeSlider.onValueChanged.AddListener(SettingsService.SetMusicVolume);
             }
             if (shakeSlider != null)
             {
-                shakeSlider.SetValueWithoutNotify(GameSettings.CameraShakeIntensity);
-                shakeSlider.onValueChanged.AddListener(GameSettings.SetCameraShakeIntensity);
+                shakeSlider.SetValueWithoutNotify(SettingsService.CameraShakeIntensity);
+                shakeSlider.onValueChanged.AddListener(SettingsService.SetCameraShakeIntensity);
             }
 
             SetupDisplayDropdowns();
@@ -50,9 +54,9 @@ namespace Biofall.UI
 
         public void Open()
         {
-            if (masterVolumeSlider != null) masterVolumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
-            if (musicVolumeSlider != null) musicVolumeSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
-            if (shakeSlider != null) shakeSlider.SetValueWithoutNotify(GameSettings.CameraShakeIntensity);
+            if (masterVolumeSlider != null) masterVolumeSlider.SetValueWithoutNotify(SettingsService.MasterVolume);
+            if (musicVolumeSlider != null) musicVolumeSlider.SetValueWithoutNotify(SettingsService.MusicVolume);
+            if (shakeSlider != null) shakeSlider.SetValueWithoutNotify(SettingsService.CameraShakeIntensity);
             gameObject.SetActive(true);
         }
 
@@ -101,7 +105,7 @@ namespace Biofall.UI
                 resolutionDropdown == null || fullscreenDropdown == null) return;
 
             Resolution r = _resolutions[Mathf.Clamp(resolutionDropdown.value, 0, _resolutions.Count - 1)];
-            GameSettings.ApplyDisplay(r.width, r.height, IndexToMode(fullscreenDropdown.value));
+            SettingsService.ApplyDisplay(r.width, r.height, IndexToMode(fullscreenDropdown.value));
         }
 
         private static int ModeToIndex(FullScreenMode mode) => mode switch

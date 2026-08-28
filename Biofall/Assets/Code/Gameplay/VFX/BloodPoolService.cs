@@ -6,6 +6,9 @@ namespace Biofall.Gameplay
 {
     public sealed class BloodPoolService : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject bloodPoolPrefab;
         [Tooltip("Max blood decals alive at once. Oldest is recycled past this — keeps it cheap.")]
         [SerializeField] private int maxPools = 40;
@@ -18,11 +21,11 @@ namespace Biofall.Gameplay
 
         private readonly Queue<GameObject> _active = new Queue<GameObject>();
 
-        private void OnEnable() => EventBus.Subscribe<TargetDied>(OnTargetDied);
+        private void OnEnable() => Bus.Subscribe<TargetDied>(OnTargetDied);
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<TargetDied>(OnTargetDied);
+            Bus.Unsubscribe<TargetDied>(OnTargetDied);
             _active.Clear();
         }
 

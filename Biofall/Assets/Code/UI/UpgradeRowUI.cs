@@ -8,6 +8,10 @@ namespace Biofall.UI
 {
     public sealed class UpgradeRowUI : MonoBehaviour
     {
+
+        private IProgressionService _progression;
+        private IProgressionService Progression =>
+            _progression ??= ServiceLocator.Get<IProgressionService>();
         private TMP_Text _name, _level, _cost, _desc;
         private Button _buy;
         private UpgradeData _data;
@@ -50,7 +54,7 @@ namespace Biofall.UI
             EnsureRefs();
             if (_data == null) return;
 
-            int level = PlayerProgression.GetLevel(_data);
+            int level = Progression.GetLevel(_data);
             int cost = _data.CostForNext(level);
             bool maxed = cost < 0;
 
@@ -58,7 +62,7 @@ namespace Biofall.UI
             if (_desc != null) _desc.text = _data.description;
             if (_level != null) _level.text = "LV " + level + " / " + _data.MaxLevel;
             if (_cost != null) _cost.text = maxed ? "MAX" : cost + " BS";
-            if (_buy != null) _buy.interactable = !maxed && PlayerProgression.CanPurchase(_data);
+            if (_buy != null) _buy.interactable = !maxed && Progression.CanPurchase(_data);
         }
     }
 }

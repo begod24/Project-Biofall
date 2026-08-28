@@ -10,7 +10,6 @@ namespace Biofall.Core
         private void Start()
         {
             Time.timeScale = 1f;
-            EventBus.Clear();
             SceneManager.LoadScene(nextScene);
         }
     }

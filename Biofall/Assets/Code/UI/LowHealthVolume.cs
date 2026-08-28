@@ -7,6 +7,9 @@ namespace Biofall.UI
     [RequireComponent(typeof(Volume))]
     public sealed class LowHealthVolume : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private Volume volume;
 
         [Header("Low-HP ramp")]
@@ -36,14 +39,14 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDamaged>(OnDamaged);
-            EventBus.Subscribe<PlayerDied>(OnDied);
+            Bus.Subscribe<PlayerDamaged>(OnDamaged);
+            Bus.Subscribe<PlayerDied>(OnDied);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDamaged>(OnDamaged);
-            EventBus.Unsubscribe<PlayerDied>(OnDied);
+            Bus.Unsubscribe<PlayerDamaged>(OnDamaged);
+            Bus.Unsubscribe<PlayerDied>(OnDied);
         }
 
         private void OnDamaged(PlayerDamaged e)

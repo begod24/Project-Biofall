@@ -11,6 +11,19 @@
 
 ---
 
+## Принятые решения
+
+1. **Транспорт и лобби — как в Office:** Unity Sessions API + Relay.
+   `LanDiscovery.cs` (194 строки самописного UDP-броадкаста) удаляется на Этапе 6.
+   Требует привязанного UGS-проекта и включённых Relay + Lobby в дашборде — это единственный
+   шаг, который может сделать только владелец аккаунта. Блокирует Этап 6, не раньше.
+2. **Соло = хост на одного игрока.** Отдельного оффлайн-пути не будет, как и у Office.
+   `NetSession.InCoop` и все ~35 ветвлений по нему исчезают на Этапе 3, а не переезжают.
+   Следствие, которого не было в первой редакции плана: `Mission_1` и `Mission_1_Coop`
+   схлопываются в **одну** сцену — сейчас это дубликат соло/ко-оп на уровне сцен.
+
+---
+
 ## Откуда стартуем
 
 | | Biofall сейчас | The Office |
@@ -104,22 +117,96 @@ Biofall.Tests.EditMode / .PlayMode
 `SpitterData`, `WeaponData`, `LootConfig`, `UpgradeData`, `UpgradeCatalog`, `GameScenes`,
 `GameEvents`, `MissionEvents`. Всё, что чистые данные без поведения.
 
-**Этап сломает компиляцию, и это цель.** Первым упадёт `Core/PlayerRegistry.cs:25` —
-`if (LocalPlayer == null && !Biofall.Net.NetSession.InCoop)`. Чинится инверсией: реестр
-не спрашивает про сеть, а получает флаг снаружи (`PlayerRegistry.AutoPromoteLocal = true/false`,
-выставляется сетевым слоем при старте сессии).
+### 1a — сборки и разворот зависимостей ✅ СДЕЛАНО
 
-Дальше упадут 20 файлов с `using Biofall.Net` вне `Net/`. Часть уедет вверх по слоям, часть —
-за интерфейс из Этапа 3. Список: `Enemy`, `Weapon`, `Pickup`, `AcidPool`, `ScreamWaveAttack`,
-`SpitAcidAttack`, `ThrownGrenade`, `LootService`, `PlayerLoadout`, `PlayerHealthReporter`,
-`BeaconStation`, `GeneratorStation`, `ExtractionPoint`, `MissionDirector` + 6 в UI.
+Главное нарушение оказалось не тем, что предсказывала первая редакция плана. `using Biofall.Net`
+в 20 файлах — это нормально: Gameplay **должен** смотреть на Net. Настоящих нарушений было три:
 
-**Готово когда:** проект компилируется, `Assembly-CSharp` пустой, и попытка сослаться из
-`Biofall.Core` на `Biofall.Net` — красная ошибка.
+| Нарушение | Файлов | Как починено |
+|---|---|---|
+| `Net → Gameplay` | 8 | `CoopPlayer/PlayerLife/ReviveInteractor/Enemy/EnemySpawner/Pickup/LootService/Mission` переехали в `Biofall.Gameplay`. Это геймплей, который просто сетевой — у Office `Health : NetworkBehaviour` тоже лежит в Gameplay, а не в Network |
+| `Net → Gameplay` (скрытое) | 1 | `CoopSession.cs:155` звал `CoopPlayer.ResolveMissionSpawnPosition`. Вынесено в `Net/PlayerSpawnPoints.cs` — тем же именем, что у Office |
+| `Core → Net` | 1 | `PlayerRegistry` больше не спрашивает `NetSession.InCoop`; вместо этого у него флаг `AutoPromoteFirstToLocal`, который выставляет сеть. Плюс сброс статики через `[RuntimeInitializeOnLoadMethod]` |
+| `Gameplay → UI`, `Net → UI` | 2 | `UiOverlay` (7 строк, статический bool «открыт ли модальный экран») переехал в `Core` — это состояние приложения, а не виджет |
+
+Созданы 5 сборок, у всех `autoReferenced: false`:
+
+```
+Biofall.Core      → Unity.InputSystem
+Biofall.Net       → Core, NGO, Collections, Transport, Services.{Core,Authentication,Multiplayer}
+Biofall.Gameplay  → Core, Net, NGO, Collections
+Biofall.UI        → Core, Net, Gameplay, NGO, InputSystem, TMP, uGUI, RenderPipelines.Core
+Biofall.Editor    → Core, Net, Gameplay, UI, TMP, uGUI   (Editor only)
+```
+
+**Проверено:** 5 сборок собираются, 0 ошибок, `Assembly-CSharp.dll` больше не существует
+(весь код проекта в своих сборках), таблица ссылок в метаданных dll подтверждает направление
+вниз, GUID'ы перемещённых скриптов сохранены — префабы целы.
+
+### 1b — `Biofall.Data` (не сделано)
+
+Отдельной сборки данных пока нет, и на сегодня она ничего не чинит: нарушений, которые она
+бы сняла, не осталось. Но она становится **обязательной на Этапе 3**: сервер должен
+переразрешать урон из `WeaponData`, то есть `Biofall.Net` должен её видеть, а сейчас
+`WeaponData` лежит в `Biofall.Gameplay` — на слой выше. Поэтому в `Biofall.Data` уезжают
+`WeaponData`, `EnemyData`, `ScreamerData`, `SpitterData`, `LootConfig`, `UpgradeData`,
+`UpgradeCatalog`, `GameScenes`, `GameEvents`, `MissionEvents`.
+
+Делать вместе с Этапом 3, а не раньше — тогда у переезда будет причина, а не только вкус.
 
 ---
 
-## Этап 2 — композишн-рут и сервисы
+## Этап 2 — композишн-рут и сервисы ✅ СДЕЛАНО
+
+Портировано из Office: `ServiceLocator`, `ServiceInstaller`, инстансный `EventBus`
+(снапшот на время рассылки, изоляция исключений по обработчику, предупреждение о двойной
+подписке — ничего этого статическая шина не делала).
+
+Статика уехала за интерфейсы:
+
+| Было | Стало |
+|---|---|
+| `static EventBus` | `IEventBus` + `EventBus`, владелец — композишн-рут |
+| `static GameSettings` | `ISettingsService` + `GameSettingsService` с инжектом `ISettingsStore` и `IDisplayDevice` |
+| `static PlayerProgression` | `IProgressionService` + `PlayerProgression` с инжектом `IProgressionStore` и каталога |
+| `static CurrencyWallet` | `RunState` |
+
+Ключи PlayerPrefs не менялись — банк и уровни апгрейдов игрока переживают рефактор.
+
+**Переписано 47 файлов, 184 вызова.**
+
+### Два отступления от Office, сделанные осознанно
+
+**1. Композишн-рут называется `Bootstrap`, а не `GameBootstrap`,** и живёт в каждой сцене,
+а не только в загрузочной. Причина: у Biofall `Boot` грузит `MainMenu` в single-режиме и
+выгружается, а разработчик жмёт Play прямо внутри геймплейной сцены. Механизм при этом
+Office-овский — `DontDestroyOnLoad` плюс статический гард `hasBooted`, поэтому вторая копия
+это no-op, и кто стартовал первым, тот и рут. Когда Этап 6 принесёт настоящий поток сцен,
+удаление лишних копий станет правкой сцен без единой строчки кода.
+
+`[Bootstrap]` добавлен в `Boot` и `MainMenu` — без него поток Boot → MainMenu остался бы
+без сервисов и `MainMenuUI` падал бы на первом же обращении к настройкам. В остальных пяти
+сценах он уже был.
+
+**2. Сервисы резолвятся лениво, а не в `Awake`.** Office требует резолвить в
+`Awake`/`Start`/`OnNetworkSpawn` и кэшировать в поле. Здесь у каждого потребителя
+`private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();` — резолв всё так же
+ровно один раз на экземпляр, но в момент первого обращения. Причина прозаична: из 47 файлов
+у многих нет `Awake`, а у части он в базовом классе, и добавление 47 методов ради буквы
+правила дало бы больше риска, чем пользы. Правило «никогда не резолвить повторно» соблюдено.
+
+**Проверено:** 5 сборок собираются, консоль пуста, и play mode реально проходит
+Boot → MainMenu без исключений.
+
+### Осталось на потом
+
+`ISceneLoader` и `IGameStateService` из Office **не портированы** — они не имеют смысла,
+пока поток сцен остаётся single-режимным. Их место — Этап 6, вместе с `SessionDirector`,
+который и владеет `NetworkVariable<GameState>`.
+
+---
+
+## Этап 2 — исходный план (справочно)
 
 Порт из Office почти дословно.
 

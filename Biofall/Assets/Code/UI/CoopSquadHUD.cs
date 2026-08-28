@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Biofall.Net;
+using Biofall.Gameplay;
 
 namespace Biofall.UI
 {

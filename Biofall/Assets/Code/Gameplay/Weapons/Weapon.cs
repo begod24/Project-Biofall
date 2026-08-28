@@ -8,6 +8,9 @@ namespace Biofall.Gameplay
     [RequireComponent(typeof(AmmoSystem))]
     public sealed class Weapon : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private WeaponData data;
         [SerializeField] private Transform muzzle;
         [SerializeField] private AudioSource audioSource;
@@ -159,7 +162,7 @@ namespace Biofall.Gameplay
 
             if (data.shootSfx != null) audioSource.PlayOneShot(data.shootSfx);
             PlayAnimTrigger(FireId);
-            EventBus.Publish(new WeaponFired(origin, baseDir));
+            Bus.Publish(new WeaponFired(origin, baseDir));
             return true;
         }
 

@@ -7,6 +7,9 @@ namespace Biofall.UI
 {
     public sealed class InteractionPromptUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject root;
         [SerializeField] private TMP_Text text;
         [SerializeField] private string keyHint = "E";
@@ -18,8 +21,8 @@ namespace Biofall.UI
             Hide();
         }
 
-        private void OnEnable() => EventBus.Subscribe<InteractPromptChanged>(OnPrompt);
-        private void OnDisable() => EventBus.Unsubscribe<InteractPromptChanged>(OnPrompt);
+        private void OnEnable() => Bus.Subscribe<InteractPromptChanged>(OnPrompt);
+        private void OnDisable() => Bus.Unsubscribe<InteractPromptChanged>(OnPrompt);
 
         private void OnPrompt(InteractPromptChanged e)
         {

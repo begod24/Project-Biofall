@@ -7,6 +7,9 @@ namespace Biofall.Gameplay.Mission1
 {
     public sealed class GeneratorStation : MonoBehaviour, IInteractable
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [Header("Charge")]
         [Tooltip("Seconds for the bar to fill after the player presses E.")]
         [SerializeField] private float chargeTime = 3f;
@@ -57,13 +60,13 @@ namespace Biofall.Gameplay.Mission1
         private void OnEnable()
         {
             PlayerInteractor.Register(this);
-            EventBus.Subscribe<GeneratorActivated>(OnActivatedFact);
+            Bus.Subscribe<GeneratorActivated>(OnActivatedFact);
         }
 
         private void OnDisable()
         {
             PlayerInteractor.Unregister(this);
-            EventBus.Unsubscribe<GeneratorActivated>(OnActivatedFact);
+            Bus.Unsubscribe<GeneratorActivated>(OnActivatedFact);
         }
 
         private IEnumerator ChargeRoutine()
@@ -73,13 +76,13 @@ namespace Biofall.Gameplay.Mission1
             while (t < chargeTime)
             {
                 t += Time.deltaTime;
-                EventBus.Publish(new MissionProgress(barLabel, Mathf.Clamp01(t / chargeTime), true));
+                Bus.Publish(new MissionProgress(barLabel, Mathf.Clamp01(t / chargeTime), true));
                 yield return null;
             }
 
-            EventBus.Publish(new MissionProgress(barLabel, 1f, false));
+            Bus.Publish(new MissionProgress(barLabel, 1f, false));
             _charging = false;
-            EventBus.Publish(new GeneratorActivated());
+            Bus.Publish(new GeneratorActivated());
         }
 
         private void OnActivatedFact(GeneratorActivated _)

@@ -6,6 +6,9 @@ namespace Biofall.Gameplay
 {
     public sealed class ScreamWaveAttack : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private ScreamerData data;
         [SerializeField] private Animator animator;
         [SerializeField] private AudioSource audioSource;
@@ -78,7 +81,7 @@ namespace Biofall.Gameplay
             }
 
             if (data.cameraShakeAmplitude > 0f)
-                EventBus.Publish(new CameraShake(data.cameraShakeAmplitude));
+                Bus.Publish(new CameraShake(data.cameraShakeAmplitude));
 
             float r2 = data.waveRadius * data.waveRadius;
 

@@ -6,6 +6,9 @@ namespace Biofall.UI
 {
     public sealed class AmmoUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private TMP_Text text;
 
         private void Awake()
@@ -15,12 +18,12 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<AmmoChanged>(OnAmmoChanged);
+            Bus.Subscribe<AmmoChanged>(OnAmmoChanged);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<AmmoChanged>(OnAmmoChanged);
+            Bus.Unsubscribe<AmmoChanged>(OnAmmoChanged);
         }
 
         private void OnAmmoChanged(AmmoChanged e)

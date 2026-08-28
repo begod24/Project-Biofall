@@ -1,0 +1,23 @@
+{
+    "name": "Biofall.Editor",
+    "rootNamespace": "Biofall.Editor",
+    "references": [
+        "Biofall.Core",
+        "Biofall.Net",
+        "Biofall.Gameplay",
+        "Biofall.UI",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

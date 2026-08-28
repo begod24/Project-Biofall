@@ -10,6 +10,9 @@ namespace Biofall.UI
 {
     public sealed class GameOverUI : MonoBehaviour
     {
+
+        private IEventBus _bus;
+        private IEventBus Bus => _bus ??= ServiceLocator.Get<IEventBus>();
         [SerializeField] private GameObject panel;
         [SerializeField] private Button restartButton;
         [SerializeField] private Button mainMenuButton;
@@ -34,14 +37,14 @@ namespace Biofall.UI
 
         private void OnEnable()
         {
-            EventBus.Subscribe<PlayerDied>(OnPlayerDied);
-            EventBus.Subscribe<TeamWiped>(OnTeamWiped);
+            Bus.Subscribe<PlayerDied>(OnPlayerDied);
+            Bus.Subscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnDisable()
         {
-            EventBus.Unsubscribe<PlayerDied>(OnPlayerDied);
-            EventBus.Unsubscribe<TeamWiped>(OnTeamWiped);
+            Bus.Unsubscribe<PlayerDied>(OnPlayerDied);
+            Bus.Unsubscribe<TeamWiped>(OnTeamWiped);
         }
 
         private void OnPlayerDied(PlayerDied _)

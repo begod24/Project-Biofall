@@ -1,33 +1,16 @@
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using Biofall.Core;
-using Biofall.Gameplay;
+using Biofall.Net;
 using Biofall.Gameplay.Mission1;
 
-namespace Biofall.Net
+namespace Biofall.Gameplay
 {
     [RequireComponent(typeof(NetworkObject))]
     public sealed class CoopPlayer : NetworkBehaviour
     {
-        private const string MissionSpawnAnchorName = "CoopSpawnPoint";
-        private const string MissionFloorName = "Plane";
-        private const float SpawnGroundProbeHeight = 12f;
-        private const float SpawnGroundProbeDistance = 40f;
-        private const float SpawnHeightPadding = 0.05f;
-
-        private static readonly Vector3 MissionSpawnFallback = new(-2.1622f, 0.05f, 19.6f);
-
-        private static readonly Vector3[] MissionSpawnOffsets =
-        {
-            Vector3.zero,
-            new Vector3(2f, 0f, 0f),
-            new Vector3(-2f, 0f, 0f),
-            new Vector3(0f, 0f, 2f)
-        };
-
         private Coroutine _ownerSceneRefresh;
 
         public override void OnNetworkSpawn()
@@ -178,7 +161,7 @@ namespace Biofall.Net
 
             for (int i = 0; i < 3; i++)
             {
-                MoveToSpawn(ResolveMissionSpawnPosition(OwnerClientId));
+                MoveToSpawn(PlayerSpawnPoints.ResolveMission(OwnerClientId));
                 BindLocalCamera();
                 yield return null;
             }
@@ -203,38 +186,6 @@ namespace Biofall.Net
         {
             var motor = GetComponent<PlayerMotor>();
             if (motor != null) motor.ResetVerticalVelocity();
-        }
-
-        public static Vector3 ResolveMissionSpawnPosition(ulong ownerClientId)
-        {
-            Vector3 position = MissionSpawnFallback;
-            Vector3 offset = MissionSpawnOffsets[(int)(ownerClientId % (ulong)MissionSpawnOffsets.Length)];
-
-            GameObject anchor = GameObject.Find(MissionSpawnAnchorName);
-            if (anchor != null)
-            {
-                position = anchor.transform.position;
-            }
-            else
-            {
-                GameObject floor = GameObject.Find(MissionFloorName);
-                if (floor != null && floor.TryGetComponent(out Renderer renderer))
-                {
-                    Bounds bounds = renderer.bounds;
-                    position = new Vector3(bounds.center.x, bounds.max.y + SpawnHeightPadding, bounds.center.z);
-                }
-            }
-
-            position += offset;
-
-            if (NavMesh.SamplePosition(position, out NavMeshHit navHit, 8f, NavMesh.AllAreas))
-                position = navHit.position + Vector3.up * SpawnHeightPadding;
-
-            Vector3 rayOrigin = position + Vector3.up * SpawnGroundProbeHeight;
-            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, SpawnGroundProbeDistance, ~0, QueryTriggerInteraction.Ignore))
-                position.y = hit.point.y + SpawnHeightPadding;
-
-            return position;
         }
 
         private void BindLocalCamera()
