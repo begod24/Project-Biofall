@@ -23,6 +23,7 @@ namespace Biofall.Gameplay.Mission1
         private MissionPhase _phase = MissionPhase.FindGenerator;
         private Coroutine _waveLoop;
         private bool _ended;
+        private bool _warnedNoSpawner;
 
         public MissionPhase Phase => _phase;
 
@@ -91,16 +92,37 @@ namespace Biofall.Gameplay.Mission1
             yield return new WaitForSeconds(firstWaveDelay);
             while (!_ended)
             {
-                if (NetSession.InCoop)
-                {
-                    if (coopDefenseSpawner != null) coopDefenseSpawner.SpawnWaveNow();
-                }
-                else if (defenseSpawner != null)
-                {
-                    defenseSpawner.SpawnNow();
-                }
+                SpawnWave();
                 yield return new WaitForSeconds(waveInterval);
             }
+        }
+
+        // Which spawner runs is decided by which one can actually run, not by NetSession.InCoop.
+        // Solo is a session of one, so the server-driven spawner is the right one in every mode;
+        // Mission_1_Coop accordingly keeps the older solo spawner on a deactivated GameObject.
+        // Asking that deactivated object to start a coroutine is what used to throw here, once
+        // per wave, with no enemies arriving either way.
+        private void SpawnWave()
+        {
+            if (coopDefenseSpawner != null && coopDefenseSpawner.isActiveAndEnabled)
+            {
+                coopDefenseSpawner.SpawnWaveNow();
+                return;
+            }
+
+            if (defenseSpawner != null && defenseSpawner.isActiveAndEnabled)
+            {
+                defenseSpawner.SpawnNow();
+                return;
+            }
+
+            // Silence would read as "the defense is just easy". Say it once and keep the loop
+            // running, so turning a spawner back on mid-run still works.
+            if (_warnedNoSpawner) return;
+            _warnedNoSpawner = true;
+            Debug.LogError("[Mission] Beacon defense has no usable spawner. Assign a " +
+                           "CoopEnemySpawner on the MissionDirector, or activate the solo " +
+                           "EnemySpawner's GameObject -- no waves will arrive.");
         }
 
         private void StopWaves()

@@ -73,18 +73,8 @@ namespace Biofall.UI
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
-        private void ToMainMenu()
-        {
-            Time.timeScale = 1f;
-            UiOverlay.Active = false;
-
-            if (NetSession.InCoop && NetworkBootstrap.Instance != null)
-            {
-                NetworkBootstrap.Instance.LeaveToMainMenu();
-                return;
-            }
-
-            SceneManager.LoadScene(GameScenes.MainMenu);
-        }
+        // Leaving the session, shutting NGO down and loading the menu all belong together, so
+        // all three screens hand off to the one place that does them in order.
+        private void ToMainMenu() => RunExit.ToMainMenu();
     }
 }

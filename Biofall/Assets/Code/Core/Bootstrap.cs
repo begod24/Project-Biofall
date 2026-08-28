@@ -60,6 +60,11 @@ namespace Biofall.Core
             _isRoot = true;
             DontDestroyOnLoad(gameObject);
 
+            // The reader rides the root, not the run scene. A scene that carries its own copy
+            // loses it the moment its duplicate Bootstrap destroys itself, which is how every
+            // run ended up with dead input.
+            EnsureInputReader();
+
             _eventBus = new EventBus();
 
             ServiceLocator.Register<IEventBus>(_eventBus);
@@ -130,6 +135,11 @@ namespace Biofall.Core
                 Debug.LogWarning("[Bootstrap] No UpgradeCatalog assigned and none at " +
                                  "Resources/UpgradeCatalog — upgrades will be inert.");
             return loaded;
+        }
+
+        private void EnsureInputReader()
+        {
+            if (GetComponent<InputReader>() == null) gameObject.AddComponent<InputReader>();
         }
 
         private static void EnsurePoolService()

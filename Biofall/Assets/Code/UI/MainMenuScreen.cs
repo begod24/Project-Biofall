@@ -189,6 +189,7 @@ namespace Biofall.UI
             _busy = true;
             SetStatus("STARTING...");
 
+            await DropStaleSessionAsync();
             bool ok = await _session.HostAsync(1, "BIOFALL Solo");
             _busy = false;
 
@@ -207,6 +208,7 @@ namespace Biofall.UI
             _busy = true;
             SetStatus("CREATING SESSION...");
 
+            await DropStaleSessionAsync();
             bool ok = await _session.HostAsync(4, "BIOFALL Squad");
             _busy = false;
 
@@ -220,12 +222,27 @@ namespace Biofall.UI
             _busy = true;
             SetStatus("JOINING...");
 
+            await DropStaleSessionAsync();
+
             string code = joinCodeField != null ? joinCodeField.text : string.Empty;
             bool ok = await _session.JoinAsync(code);
             _busy = false;
 
             SetStatus(ok ? string.Empty : _session.LastError);
             Show(ok ? lobbyPanel : connectPanel);
+        }
+
+        // Reaching a launch button means the player is on the root menu, not in a lobby, so a
+        // session still open here is left over from a run that exited badly. Closing it is what
+        // keeps a single stuck session from locking the player out of the game -- without this,
+        // "Already in a session." is unrecoverable short of restarting the build.
+        private async System.Threading.Tasks.Task DropStaleSessionAsync()
+        {
+            if (_session == null || _session.Phase == SessionPhase.Offline) return;
+
+            Debug.LogWarning("[Menu] A session was still open on the main menu. Closing it " +
+                             "before starting a new one.");
+            await _session.LeaveAsync();
         }
 
         private async void Leave()

@@ -33,14 +33,12 @@ namespace Biofall.Gameplay
         [SerializeField] private float shakeAmplitude = 0.35f;
         [SerializeField] private float shakeDecay = 1.6f;
 
-        private InputReader _input;
         private Camera _camera;
         private float _shake;
 
         private void Awake()
         {
             _camera = GetComponent<Camera>();
-            _input = FindAnyObjectByType<InputReader>();
             transform.rotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 
@@ -101,10 +99,10 @@ namespace Biofall.Gameplay
 
         private Vector3 ComputeLookahead(Quaternion rotation)
         {
-            if (_input == null || _camera == null || lookaheadAmount <= 0f)
+            if (_camera == null || lookaheadAmount <= 0f)
                 return Vector3.zero;
 
-            Ray ray = _camera.ScreenPointToRay(_input.PointerScreenPosition);
+            Ray ray = _camera.ScreenPointToRay(InputReader.Instance.PointerScreenPosition);
             Plane ground = new Plane(Vector3.up, new Vector3(0f, target.position.y, 0f));
             if (!ground.Raycast(ray, out float dist)) return Vector3.zero;
 
